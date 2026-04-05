@@ -1,0 +1,913 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Plant-Based Nutrition | Neural Vault — Alien Artifact</title>
+<link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;600;700;900&family=Tajawal:wght@300;400;500;700;800;900&family=JetBrains+Mono:wght@400;700&display=swap" rel="stylesheet">
+<style>
+:root{--cyan:#22d3ee;--purple:#a78bfa;--emerald:#34d399;--gold:#facc15;--red:#ef4444;--bg:#030306;--glass:rgba(18,18,40,0.4);--glass2:rgba(18,18,40,0.55);--glass-border:rgba(255,255,255,0.08);--glass-border-h:rgba(34,211,238,0.25);--text:#e2e8f0;--text-dim:#94a3b8;--font-ar:'Tajawal',sans-serif;--font-en:'Outfit',sans-serif;--font-mono:'JetBrains Mono',monospace;--hud-clip:polygon(0 0,calc(100% - 18px) 0,100% 18px,100% 100%,18px 100%,0 calc(100% - 18px))}
+*,*::before,*::after{margin:0;padding:0;box-sizing:border-box}
+html{scroll-behavior:smooth;scrollbar-width:thin;scrollbar-color:var(--cyan) #0a0a1a}
+body{background:var(--bg);color:var(--text);font-family:var(--font-ar);line-height:2.15;overflow-x:hidden;cursor:none}
+::-webkit-scrollbar{width:5px}
+::-webkit-scrollbar-track{background:#0a0a1a}
+::-webkit-scrollbar-thumb{background:var(--cyan);border-radius:3px}
+
+/* ══ BOOT ══ */
+#boot-overlay{position:fixed;inset:0;z-index:100000;background:#000;display:flex;flex-direction:column;align-items:center;justify-content:center;transition:opacity .4s}
+#boot-overlay.flash{background:#fff}
+#boot-overlay.hide{opacity:0;pointer-events:none}
+#boot-text{font-family:var(--font-mono);color:#22d3ee;font-size:clamp(.75rem,1.8vw,1.1rem);text-align:center;white-space:pre-line;text-shadow:0 0 20px rgba(34,211,238,.6)}
+.boot-line{opacity:0;transform:translateY(10px);transition:all .3s}
+.boot-line.show{opacity:1;transform:translateY(0)}
+#boot-bar{width:280px;height:3px;background:rgba(34,211,238,.12);border-radius:2px;margin-top:24px;overflow:hidden}
+#boot-bar-fill{width:0;height:100%;background:linear-gradient(90deg,var(--cyan),var(--emerald));border-radius:2px;transition:width .3s}
+
+/* ══ CURSOR ══ */
+#cursor{position:fixed;width:14px;height:14px;border-radius:50%;background:var(--cyan);pointer-events:none;z-index:99999;mix-blend-mode:screen;transition:transform .12s,width .2s,height .2s,background .2s,border-radius .2s;transform:translate(-50%,-50%);box-shadow:0 0 20px var(--cyan),0 0 60px rgba(34,211,238,.3)}
+#cursor.hover{width:44px;height:44px;background:rgba(34,211,238,.15);border:2px solid var(--cyan)}
+#cursor.crosshair{width:28px;height:28px;border-radius:0;background:transparent;border:2px solid var(--cyan);box-shadow:0 0 15px var(--cyan),0 0 40px rgba(34,211,238,.3)}
+#cursor.crosshair::before,#cursor.crosshair::after{content:'';position:absolute;background:var(--cyan)}
+.cursor-trail{position:fixed;width:5px;height:5px;border-radius:50%;background:rgba(34,211,238,.35);pointer-events:none;z-index:99998;transform:translate(-50%,-50%)}
+
+/* ══ MESH BG — UNTOUCHED ══ */
+#mesh-bg{position:fixed;inset:0;z-index:0;overflow:hidden}
+.mesh-blob{position:absolute;border-radius:50%;filter:blur(120px);opacity:.12;animation:meshFloat 25s ease-in-out infinite}
+.mesh-blob:nth-child(1){width:800px;height:800px;background:var(--cyan);top:-20%;left:-10%;animation-delay:0s}
+.mesh-blob:nth-child(2){width:600px;height:600px;background:var(--purple);top:40%;right:-15%;animation-delay:-8s;animation-duration:30s}
+.mesh-blob:nth-child(3){width:700px;height:700px;background:var(--emerald);bottom:-20%;left:30%;animation-delay:-16s;animation-duration:35s}
+@keyframes meshFloat{0%,100%{transform:translate(0,0) scale(1)}25%{transform:translate(100px,-80px) scale(1.1)}50%{transform:translate(-60px,120px) scale(.9)}75%{transform:translate(80px,60px) scale(1.05)}}
+
+/* ══ CANVAS — UNTOUCHED ══ */
+#particle-canvas{position:fixed;inset:0;z-index:1;pointer-events:none}
+
+/* ══ SCROLL PROGRESS ══ */
+#scroll-progress{position:fixed;top:0;right:0;height:3px;z-index:9999;background:linear-gradient(90deg,var(--cyan),var(--purple),var(--emerald));box-shadow:0 0 14px var(--cyan);transition:width .1s;width:0}
+
+/* ══ FLOATING NAV ══ */
+#floating-nav{position:fixed;left:16px;top:50%;transform:translateY(-50%);z-index:9998;display:flex;flex-direction:column;gap:12px}
+.nav-dot{width:10px;height:10px;border-radius:50%;background:rgba(255,255,255,.12);border:1px solid rgba(255,255,255,.15);cursor:pointer;transition:all .3s;position:relative}
+.nav-dot:hover,.nav-dot.active{background:var(--cyan);box-shadow:0 0 14px var(--cyan),0 0 35px rgba(34,211,238,.4);transform:scale(1.5)}
+.nav-dot .nav-label{position:absolute;right:20px;top:50%;transform:translateY(-50%);background:var(--glass2);backdrop-filter:blur(12px);padding:4px 14px;border-radius:8px;font-size:.7rem;white-space:nowrap;opacity:0;pointer-events:none;transition:opacity .3s;border:1px solid var(--glass-border);direction:rtl}
+.nav-dot:hover .nav-label{opacity:1}
+
+/* ══ GEO DECO ══ */
+.geo-deco{position:fixed;z-index:1;pointer-events:none;opacity:.06;animation:geoSpin 40s linear infinite}
+.geo-deco:nth-child(1){top:15%;right:5%;width:120px;height:120px}
+.geo-deco:nth-child(2){bottom:20%;left:3%;width:80px;height:80px;animation-duration:55s;animation-direction:reverse}
+.geo-deco:nth-child(3){top:60%;right:8%;width:60px;height:60px;animation-duration:35s}
+@keyframes geoSpin{to{transform:rotate(360deg)}}
+
+/* ══ MAIN ══ */
+main{position:relative;z-index:2}
+section{padding:clamp(50px,10vw,120px) clamp(16px,5vw,80px);position:relative}
+.section-inner{max-width:1400px;margin:0 auto}
+
+/* ══ HUD GLASS PANELS ══ */
+.glass{background:var(--glass);backdrop-filter:blur(18px);-webkit-backdrop-filter:blur(18px);border:1px solid var(--glass-border);clip-path:var(--hud-clip);overflow:hidden;position:relative;transition:border-color .4s,box-shadow .4s}
+.glass::before{content:'';position:absolute;inset:0;background:radial-gradient(600px circle at var(--mx,50%) var(--my,50%),rgba(34,211,238,.04) 0%,transparent 60%);pointer-events:none;opacity:0;transition:opacity .4s}
+.glass:hover{border-color:var(--glass-border-h);box-shadow:0 0 40px rgba(34,211,238,.03)}
+.glass:hover::before{opacity:1}
+
+/* ══ HUD CORNER ACCENTS ══ */
+.glass::after{content:'';position:absolute;top:4px;left:4px;width:20px;height:20px;border-top:1px solid rgba(34,211,238,.25);border-left:1px solid rgba(34,211,238,.25);pointer-events:none;opacity:0;transition:opacity .4s}
+.glass:hover::after{opacity:1}
+
+/* ══ WATERMARK EMOJI ══ */
+.wm{position:absolute;font-size:clamp(80px,14vw,180px);opacity:.04;pointer-events:none;z-index:0;filter:blur(2px);top:50%;right:10%;transform:translateY(-50%)}
+
+/* ══ SCANNING LINE ══ */
+.glass.scan .scan-line{position:absolute;left:0;right:0;height:1px;background:linear-gradient(90deg,transparent,rgba(34,211,238,.25),transparent);animation:scanDown 4s linear infinite;pointer-events:none;z-index:1}
+@keyframes scanDown{0%{top:-1px;opacity:0}10%{opacity:1}90%{opacity:1}100%{top:100%;opacity:0}}
+
+/* ══ BENTO GRIDS ══ */
+.bento{display:grid;gap:clamp(14px,2vw,22px)}
+.b2{grid-template-columns:repeat(2,1fr)}
+.b3{grid-template-columns:repeat(3,1fr)}
+.b-asym{grid-template-columns:1.6fr 1fr}
+.b-asym-r{grid-template-columns:1fr 1.6fr}
+.span-2{grid-column:span 2}
+.span-full{grid-column:1/-1}
+.card{padding:clamp(20px,3vw,36px);position:relative;z-index:1}
+
+/* ══ TYPOGRAPHY ══ */
+.h-xl{font-size:clamp(2.4rem,6vw,5rem);font-weight:900;line-height:1.15;margin-bottom:16px;background:linear-gradient(135deg,#fff 30%,var(--cyan));-webkit-background-clip:text;-webkit-text-fill-color:transparent;background-clip:text}
+.h-lg{font-size:clamp(1.5rem,3.5vw,2.6rem);font-weight:800;line-height:1.3;margin-bottom:14px;color:#fff}
+.h-md{font-size:clamp(1.15rem,2.2vw,1.6rem);font-weight:700;line-height:1.4;margin-bottom:10px;color:var(--cyan)}
+.h-sm{font-size:clamp(.95rem,1.8vw,1.2rem);font-weight:700;color:var(--emerald);margin-bottom:8px}
+p,.txt{font-size:clamp(.92rem,1.4vw,1.05rem);line-height:2.2;color:var(--text-dim);margin-bottom:10px}
+.en{font-family:var(--font-en);direction:ltr;display:inline}
+.mono{font-family:var(--font-mono);color:var(--cyan);font-size:.88em;background:rgba(34,211,238,.08);padding:1px 7px;border-radius:5px}
+.hi{color:var(--cyan);font-weight:700}
+.hp{color:var(--purple);font-weight:700}
+.he{color:var(--emerald);font-weight:700}
+.hg{color:var(--gold);font-weight:700}
+.hr{color:var(--red);font-weight:700}
+.big-emoji{font-size:clamp(2.5rem,5vw,4rem);display:block;margin-bottom:10px;filter:drop-shadow(0 0 20px rgba(34,211,238,.4))}
+.mega-emoji{font-size:clamp(60px,12vw,120px);display:block;text-align:center;filter:drop-shadow(0 0 40px rgba(34,211,238,.5)) drop-shadow(0 0 80px rgba(167,139,250,.3));animation:emojiFloat 5s ease-in-out infinite;margin:20px 0}
+@keyframes emojiFloat{0%,100%{transform:translateY(0) rotate(-2deg)}50%{transform:translateY(-15px) rotate(2deg)}}
+
+/* ══ SECTION HEADER ══ */
+.sec-head{text-align:center;margin-bottom:clamp(35px,5vw,65px)}
+.sec-tag{display:inline-block;background:linear-gradient(135deg,rgba(34,211,238,.12),rgba(167,139,250,.12));border:1px solid rgba(34,211,238,.25);padding:6px 22px;border-radius:100px;font-size:.8rem;color:var(--cyan);font-weight:600;margin-bottom:10px;letter-spacing:1.5px;font-family:var(--font-mono)}
+.sec-emoji{font-size:clamp(44px,7vw,72px);display:block;margin-bottom:8px;filter:drop-shadow(0 0 28px rgba(34,211,238,.4))}
+
+/* ══ GLITCH HEADLINE ══ */
+.glitch-head{position:relative;display:inline-block}
+.glitch-head.glitching{animation:glitchText .3s ease}
+@keyframes glitchText{0%{text-shadow:2px 0 var(--cyan),-2px 0 var(--red);transform:translate(0)}20%{text-shadow:-3px 0 var(--red),3px 0 var(--cyan);transform:translate(-2px,1px)}40%{text-shadow:3px 0 var(--cyan),-3px 0 var(--red);transform:translate(2px,-1px)}60%{text-shadow:-2px 0 var(--red),2px 0 var(--cyan);transform:translate(-1px,2px)}80%{text-shadow:2px 0 var(--cyan),-2px 0 var(--red);transform:translate(1px,-1px)}100%{text-shadow:none;transform:translate(0)}}
+
+/* ══ REVEAL ══ */
+.rv{opacity:0;transform:translateY(40px);filter:blur(8px);transition:all .8s cubic-bezier(.16,1,.3,1)}
+.rv.visible{opacity:1;transform:translateY(0);filter:blur(0)}
+.rv-d1{transition-delay:.1s}.rv-d2{transition-delay:.2s}.rv-d3{transition-delay:.3s}.rv-d4{transition-delay:.4s}.rv-d5{transition-delay:.5s}
+
+/* ══ SPECTRUM ══ */
+.spectrum{display:flex;flex-direction:column;gap:8px;margin:14px 0}
+.sp-item{display:flex;align-items:center;gap:12px;padding:10px 16px;border-radius:12px;background:rgba(255,255,255,.02);border:1px solid rgba(255,255,255,.04);transition:all .3s}
+.sp-item:hover{background:rgba(34,211,238,.04);border-color:rgba(34,211,238,.15)}
+.sp-bar{height:6px;border-radius:3px;flex-shrink:0}
+.sp-label{font-size:.88rem;color:var(--text)}
+
+/* ══ GOLDEN RULE ══ */
+.rule-grid{display:grid;grid-template-columns:1fr 1fr;gap:16px;margin-top:10px}
+.rule-yes{border-right:3px solid var(--emerald);padding-right:16px}
+.rule-no{border-right:3px solid var(--red);padding-right:16px}
+.rule-list{list-style:none;padding:0}
+.rule-list li{padding:3px 0;font-size:.9rem;color:var(--text-dim)}
+
+/* ══ STAT BARS ══ */
+.stat-wrap{margin:8px 0}
+.stat-label{font-size:.82rem;color:var(--text);margin-bottom:3px;display:flex;justify-content:space-between}
+.stat-bar{height:7px;background:rgba(255,255,255,.05);border-radius:4px;overflow:hidden}
+.stat-fill{height:100%;border-radius:4px;transition:width 1.5s cubic-bezier(.16,1,.3,1);width:0}
+
+/* ══ PROGRESS RINGS ══ */
+.ring-row{display:flex;gap:24px;flex-wrap:wrap;justify-content:center;margin:16px 0}
+.ring-item{text-align:center}
+.ring-label{font-size:.75rem;color:var(--text-dim);margin-top:6px;display:block}
+.ring-val{font-family:var(--font-mono);font-size:.85rem;fill:var(--cyan);font-weight:700}
+
+/* ══ TERMINAL ══ */
+.terminal{background:rgba(0,0,0,.65);border:1px solid rgba(34,211,238,.25);border-radius:18px;padding:clamp(22px,3vw,44px);font-family:var(--font-mono);position:relative;overflow:hidden;clip-path:none}
+.terminal::before{content:'';position:absolute;top:0;left:0;right:0;height:38px;background:rgba(34,211,238,.04);border-bottom:1px solid rgba(34,211,238,.12)}
+.term-dots{position:absolute;top:11px;left:16px;display:flex;gap:7px}
+.term-dots span{width:11px;height:11px;border-radius:50%;display:block}
+.term-dots span:nth-child(1){background:#ef4444}
+.term-dots span:nth-child(2){background:#f59e0b}
+.term-dots span:nth-child(3){background:#22c55e}
+.term-title{position:absolute;top:9px;left:50%;transform:translateX(-50%);color:var(--cyan);font-size:.75rem;opacity:.5}
+.term-body{margin-top:28px;font-size:clamp(.78rem,1.2vw,.92rem);line-height:2.1;color:var(--emerald);direction:rtl}
+.term-line{opacity:0;transform:translateX(20px);transition:all .5s}
+.term-line.visible{opacity:1;transform:translateX(0)}
+.t-prompt{color:var(--cyan);margin-left:8px}
+.t-key{color:var(--gold);font-weight:700}
+.t-val{color:var(--emerald)}
+
+/* ══ FLOWCHART ══ */
+.flow-wrap{margin:16px 0;display:flex;justify-content:center;overflow-x:auto}
+.flow-wrap svg{max-width:100%;height:auto}
+
+/* ══ 3D FLASHCARDS ══ */
+.fc-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(260px,1fr));gap:18px;margin:20px 0}
+.fc{perspective:1000px;height:220px;cursor:pointer}
+.fc-inner{position:relative;width:100%;height:100%;transition:transform .7s cubic-bezier(.16,1,.3,1);transform-style:preserve-3d}
+.fc.flipped .fc-inner{transform:rotateY(180deg)}
+.fc-front,.fc-back{position:absolute;inset:0;backface-visibility:hidden;-webkit-backface-visibility:hidden;clip-path:var(--hud-clip);padding:24px;display:flex;flex-direction:column;align-items:center;justify-content:center;text-align:center;border:1px solid var(--glass-border)}
+.fc-front{background:var(--glass2);backdrop-filter:blur(16px)}
+.fc-back{background:rgba(34,211,238,.06);backdrop-filter:blur(16px);transform:rotateY(180deg);border-color:rgba(34,211,238,.2)}
+.fc-front .fc-emoji{font-size:2.5rem;margin-bottom:10px}
+.fc-front h4{color:#fff;font-size:1rem;font-weight:700}
+.fc-front .fc-hint{font-size:.7rem;color:var(--text-dim);margin-top:10px;opacity:.6}
+.fc-back p{font-size:.88rem;line-height:2;color:var(--text-dim)}
+
+/* ══ MATCHING ══ */
+.match-cols{display:flex;gap:clamp(60px,10vw,200px);justify-content:center;flex-wrap:wrap}
+.match-col{display:flex;flex-direction:column;gap:12px;min-width:200px;flex:1;max-width:320px}
+.match-item{padding:14px 18px;clip-path:var(--hud-clip);background:var(--glass);backdrop-filter:blur(12px);border:1.5px solid var(--glass-border);cursor:pointer;transition:all .3s;font-size:.88rem;text-align:center;color:var(--text);position:relative}
+.match-item:hover{border-color:var(--cyan);background:rgba(34,211,238,.06)}
+.match-item.selected{border-color:var(--cyan);box-shadow:0 0 20px rgba(34,211,238,.15)}
+.match-item.matched{border-color:var(--emerald);background:rgba(52,211,153,.08);pointer-events:none;opacity:.7}
+.match-item.wrong-match{animation:shakeX .4s ease}
+
+/* ══ QUIZ CAROUSEL ══ */
+#quiz-terminal{position:relative;overflow:hidden}
+#quiz-terminal .glass{clip-path:none;border-radius:22px}
+.qt-header{display:flex;align-items:center;justify-content:space-between;margin-bottom:20px;flex-wrap:wrap;gap:12px}
+.qt-progress-wrap{width:100%;height:6px;background:rgba(255,255,255,.05);border-radius:3px;overflow:hidden;margin-bottom:10px}
+.qt-progress-fill{height:100%;background:linear-gradient(90deg,var(--cyan),var(--emerald));border-radius:3px;transition:width .4s cubic-bezier(.16,1,.3,1);width:0}
+.qt-counter{font-family:var(--font-mono);color:var(--cyan);font-size:1rem;font-weight:700}
+.qt-streak{font-family:var(--font-mono);color:var(--gold);font-size:1rem;font-weight:700;min-width:60px;text-align:center}
+.qt-score{font-family:var(--font-mono);color:var(--emerald);font-size:1rem}
+.qt-slide{display:none;animation:slideIn .4s ease}
+.qt-slide.active{display:block}
+@keyframes slideIn{from{opacity:0;transform:translateX(30px)}to{opacity:1;transform:translateX(0)}}
+.quiz-q{font-size:clamp(.95rem,1.6vw,1.1rem);font-weight:600;color:#fff;margin-bottom:18px;line-height:2.1;padding-right:40px;position:relative}
+.q-num{position:absolute;right:0;top:0;width:30px;height:30px;border-radius:9px;background:linear-gradient(135deg,var(--cyan),var(--purple));display:flex;align-items:center;justify-content:center;font-size:.82rem;font-weight:800;color:#000}
+.quiz-opts{display:flex;flex-direction:column;gap:9px;margin-bottom:14px}
+.quiz-opt{padding:13px 20px;clip-path:var(--hud-clip);background:rgba(255,255,255,.025);border:1.5px solid rgba(255,255,255,.07);cursor:pointer;transition:all .25s;font-size:.9rem;line-height:1.8;color:var(--text-dim)}
+.quiz-opt:hover{background:rgba(34,211,238,.05);border-color:rgba(34,211,238,.25);color:#fff}
+.quiz-opt.correct{background:rgba(52,211,153,.12)!important;border-color:var(--emerald)!important;color:var(--emerald)!important;box-shadow:0 0 20px rgba(52,211,153,.1)}
+.quiz-opt.wrong{background:rgba(239,68,68,.1)!important;border-color:var(--red)!important;color:var(--red)!important}
+.quiz-tf{display:flex;gap:12px;margin-bottom:14px}
+.quiz-tf-btn{flex:1;padding:14px;clip-path:var(--hud-clip);background:rgba(255,255,255,.025);border:1.5px solid rgba(255,255,255,.07);cursor:pointer;font-size:1rem;font-weight:700;text-align:center;transition:all .25s;color:var(--text-dim)}
+.quiz-tf-btn:hover{border-color:var(--cyan)}
+.quiz-tf-btn.correct{background:rgba(52,211,153,.12)!important;border-color:var(--emerald)!important;color:var(--emerald)!important}
+.quiz-tf-btn.wrong{background:rgba(239,68,68,.1)!important;border-color:var(--red)!important;color:var(--red)!important}
+.quiz-exp{display:none;padding:14px 18px;border-radius:14px;background:rgba(34,211,238,.04);border:1px solid rgba(34,211,238,.12);font-size:.85rem;line-height:2.1;color:var(--text-dim);margin-top:10px}
+.quiz-exp.show{display:block;animation:slideUp .35s ease}
+.qt-nav{display:flex;gap:12px;justify-content:center;margin-top:20px}
+.qt-btn{padding:10px 28px;clip-path:var(--hud-clip);background:rgba(34,211,238,.08);border:1px solid rgba(34,211,238,.3);color:var(--cyan);font-family:var(--font-mono);font-size:.85rem;font-weight:700;cursor:pointer;transition:all .3s;letter-spacing:1px}
+.qt-btn:hover{background:rgba(34,211,238,.18);box-shadow:0 0 20px rgba(34,211,238,.15)}
+.qt-btn:disabled{opacity:.3;cursor:not-allowed}
+.qt-glitch{animation:termGlitch .3s ease}
+@keyframes termGlitch{0%{clip-path:inset(0);transform:translate(0)}10%{clip-path:inset(20% 0 40% 0);transform:translate(-3px,2px)}20%{clip-path:inset(60% 0 10% 0);transform:translate(3px,-2px)}30%{clip-path:inset(10% 0 70% 0);transform:translate(-2px,1px)}40%{clip-path:inset(50% 0 20% 0);transform:translate(2px,-1px)}50%{clip-path:inset(0);transform:translate(0)}100%{clip-path:inset(0);transform:translate(0)}}
+.qt-bounce{animation:qtBounce .5s cubic-bezier(.34,1.56,.64,1)}
+@keyframes qtBounce{0%{transform:scale(1)}50%{transform:scale(1.02)}100%{transform:scale(1)}}
+
+/* ══ NEON PULSE ══ */
+#neon-pulse{position:fixed;inset:0;z-index:99990;pointer-events:none;opacity:0;border:3px solid var(--emerald);box-shadow:inset 0 0 80px rgba(52,211,153,.15),0 0 80px rgba(52,211,153,.08);transition:opacity .1s}
+#neon-pulse.active{opacity:1;animation:neonFade .7s ease-out forwards}
+#neon-pulse.red{border-color:var(--red);box-shadow:inset 0 0 60px rgba(239,68,68,.1),0 0 60px rgba(239,68,68,.06)}
+@keyframes neonFade{to{opacity:0}}
+
+/* ══ ANIMS ══ */
+@keyframes shakeX{0%,100%{transform:translateX(0)}10%{transform:translateX(-8px)}20%{transform:translateX(8px)}30%{transform:translateX(-6px)}40%{transform:translateX(6px)}50%{transform:translateX(-3px)}60%{transform:translateX(3px)}}
+@keyframes slideUp{from{opacity:0;transform:translateY(8px)}to{opacity:1;transform:translateY(0)}}
+@keyframes confettiFall{0%{transform:translateY(-20px) rotate(0) scale(1);opacity:1}100%{transform:translateY(100vh) rotate(720deg) scale(0);opacity:0}}
+
+/* ══ VISUAL BREAK ══ */
+.vis-break{display:flex;align-items:center;justify-content:center;padding:40px 0;position:relative}
+.vis-break .vb-line{flex:1;height:1px;background:linear-gradient(90deg,transparent,rgba(34,211,238,.15),transparent)}
+.vis-break .vb-icon{margin:0 20px;font-size:1.8rem;filter:drop-shadow(0 0 15px rgba(34,211,238,.4));animation:emojiFloat 4s ease-in-out infinite}
+
+/* ══ CHIP & CALLOUT ══ */
+.chip{display:inline-flex;align-items:center;gap:6px;padding:5px 14px;border-radius:100px;font-size:.78rem;font-weight:600;border:1px solid}
+.chip-cyan{background:rgba(34,211,238,.08);border-color:rgba(34,211,238,.2);color:var(--cyan)}
+.chip-gold{background:rgba(250,204,21,.06);border-color:rgba(250,204,21,.2);color:var(--gold)}
+.chip-red{background:rgba(239,68,68,.06);border-color:rgba(239,68,68,.2);color:var(--red)}
+.chip-emerald{background:rgba(52,211,153,.06);border-color:rgba(52,211,153,.2);color:var(--emerald)}
+.callout{padding:16px 20px;border-radius:14px;margin:12px 0;border:1px solid}
+.callout-cyan{background:rgba(34,211,238,.04);border-color:rgba(34,211,238,.12)}
+.callout-gold{background:rgba(250,204,21,.04);border-color:rgba(250,204,21,.12)}
+.callout-red{background:rgba(239,68,68,.04);border-color:rgba(239,68,68,.12)}
+
+/* ══ RADAR / DATA VIS ══ */
+.radar-wrap{position:absolute;top:10px;left:10px;width:60px;height:60px;opacity:.15;pointer-events:none;z-index:0}
+.radar-ring{position:absolute;inset:0;border:1px solid var(--cyan);border-radius:50%;animation:radarPulse 2s ease-out infinite}
+.radar-ring:nth-child(2){inset:8px;animation-delay:.4s}
+.radar-ring:nth-child(3){inset:16px;animation-delay:.8s}
+.radar-sweep{position:absolute;top:50%;left:50%;width:50%;height:1px;background:linear-gradient(90deg,var(--cyan),transparent);transform-origin:left center;animation:radarSweep 3s linear infinite}
+@keyframes radarPulse{0%{opacity:1;transform:scale(1)}100%{opacity:0;transform:scale(1.4)}}
+@keyframes radarSweep{to{transform:rotate(360deg)}}
+
+/* ══ DATA STREAM ══ */
+.data-stream{position:absolute;bottom:8px;right:8px;font-family:var(--font-mono);font-size:.55rem;color:var(--cyan);opacity:.12;pointer-events:none;z-index:0;direction:ltr;line-height:1.4;text-align:right;max-width:100px;overflow:hidden;height:40px}
+
+/* ══ RESPONSIVE ══ */
+@media(max-width:1024px){
+.b3{grid-template-columns:repeat(2,1fr)}
+}
+@media(max-width:768px){
+.b2,.b3,.b-asym,.b-asym-r{grid-template-columns:1fr}
+.span-2{grid-column:span 1}
+#floating-nav{display:none}
+.rule-grid{grid-template-columns:1fr}
+.quiz-tf{flex-direction:column}
+.match-cols{flex-direction:column;gap:20px}
+.radar-wrap{display:none}
+}
+@media(max-width:500px){
+section{padding:28px 10px}
+.card{padding:16px}
+}
+</style>
+</head>
+<body>
+
+<!-- BOOT -->
+<div id="boot-overlay">
+<div id="boot-text">
+<div class="boot-line" data-text="[SYS] INITIALIZING NEURAL LINK...">‎</div>
+<div class="boot-line" data-text="[NET] DECRYPTING MEDICAL DATABASE...">‎</div>
+<div class="boot-line" data-text="[MOD] LOADING PLANT-BASED NUTRITION MODULE...">‎</div>
+<div class="boot-line" data-text="[OK]  ALIEN ARTIFACT LOADED ✓">‎</div>
+</div>
+<div id="boot-bar"><div id="boot-bar-fill"></div></div>
+</div>
+
+<div id="cursor"></div>
+<div id="neon-pulse"></div>
+<div id="mesh-bg"><div class="mesh-blob"></div><div class="mesh-blob"></div><div class="mesh-blob"></div></div>
+<canvas id="particle-canvas"></canvas>
+<div id="scroll-progress"></div>
+
+<svg class="geo-deco" viewBox="0 0 100 100"><polygon points="50,2 95,27 95,73 50,98 5,73 5,27" fill="none" stroke="rgba(34,211,238,.3)" stroke-width=".5"/><polygon points="50,15 82,32 82,68 50,85 18,68 18,32" fill="none" stroke="rgba(167,139,250,.2)" stroke-width=".4"/></svg>
+<svg class="geo-deco" viewBox="0 0 100 100"><circle cx="50" cy="50" r="45" fill="none" stroke="rgba(52,211,153,.3)" stroke-width=".5"/><circle cx="50" cy="50" r="30" fill="none" stroke="rgba(34,211,238,.2)" stroke-width=".4"/></svg>
+<svg class="geo-deco" viewBox="0 0 100 100"><rect x="15" y="15" width="70" height="70" rx="5" fill="none" stroke="rgba(250,204,21,.2)" stroke-width=".5" transform="rotate(45 50 50)"/></svg>
+
+<nav id="floating-nav"></nav>
+
+<main>
+
+<!-- ═══════════ HERO ═══════════ -->
+<section id="hero">
+<div class="section-inner" style="text-align:center;min-height:90vh;display:flex;flex-direction:column;align-items:center;justify-content:center">
+<span class="mega-emoji rv">🌱</span>
+<h1 class="h-xl scramble glitch-head rv rv-d1">Plant-Based Nutrition</h1>
+<p class="h-lg rv rv-d2" style="color:var(--text);font-weight:500">التغذية القائمة على النباتات</p>
+<p style="font-size:clamp(.95rem,1.8vw,1.2rem);color:var(--text-dim);max-width:750px;margin:16px auto 0;line-height:2.3" class="rv rv-d3">أهلاً بك يا دكتور 👋 جهّز قهوتك ☕ وركّز معايا كويس جداً. المحاضرة دي عن الـ <span class="en hi">Plant-Based Nutrition</span>، وهي مش مجرد "كلام دايت"، دي محاضرة مليانة <span class="en hp">Mechanisms</span> و <span class="en hp">Pathophysiology</span> و <span class="en he">Clinical pearls</span> 💎 هتنفعك جداً في العيادة 🏥 وفي الامتحانات 📝.</p>
+<p style="font-size:clamp(.92rem,1.5vw,1.1rem);color:var(--text-dim);max-width:700px;margin:10px auto 0;line-height:2.2" class="rv rv-d4">أنا قريت المحاضرة من الغلاف للغلاف 📚، وهشرحلك كل حرف فيها بأسلوب طبي متسلسل، يخليك تقفل الـ PDF ده للأبد ✅ وأنت فاهم وحافظ كل كلمة.</p>
+<p class="rv rv-d5" style="font-size:2.2rem;margin-top:24px">يلا بينا نبدأ رحلتنا! 🚀</p>
+</div>
+</section>
+
+<!-- ═══════════ PART 1 ═══════════ -->
+<section id="part1">
+<div class="section-inner">
+<div class="sec-head rv">
+<span class="sec-emoji">📖</span>
+<span class="sec-tag">PART 01</span>
+<h2 class="h-xl scramble glitch-head">ضبط المصطلحات</h2>
+<p class="h-md" style="color:var(--text-dim)">Definitions & The Diet Spectrum</p>
+</div>
+<p class="rv txt" style="text-align:center;max-width:700px;margin:0 auto 30px">أول حاجة لازم نفرق بين مصطلحين الناس بتلخبط بينهم 🤔:</p>
+<div class="bento b2 rv" style="margin-bottom:22px">
+<div class="glass scan card"><div class="scan-line"></div><span class="wm">🥗</span><div class="radar-wrap"><div class="radar-ring"></div><div class="radar-ring"></div><div class="radar-ring"></div><div class="radar-sweep"></div></div>
+<span class="big-emoji">🥗</span>
+<h3 class="h-md"><span class="en">Plant-Based Diet (PBD)</span></h3>
+<p>ده نظام غذائي بيعتمد على النباتات 🌿 (خضار، فاكهة، حبوب كاملة، مكسرات، بقوليات) وممكن يقلل أو يمنع المنتجات الحيوانية. هدفه الأساسي: <span class="he">الصحة وحماية البيئة 🌍</span>.</p>
+<span class="chip chip-emerald" style="margin-top:8px">🎯 Health & Environment</span>
+<div class="data-stream">0x4F2A...<br>NUTRI_OK<br>PLT_SRC</div>
+</div>
+<div class="glass scan card"><div class="scan-line"></div><span class="wm">💚</span>
+<span class="big-emoji">💚</span>
+<h3 class="h-md"><span class="en">Veganism</span> (الخضرية)</h3>
+<p>دي <span class="hi">"فلسفة"</span> 💡 أو أسلوب حياة. الشخص الـ <span class="en">Vegan</span> بيمنع أي استخدام للحيوانات (لا أكل 🍖، ولا لبس زي الجلد 👜، ولا منتجات تجميل متجربة على حيوانات 🐰) هدفه الأساسي: <span class="he">التعاطف مع الحيوانات (<span class="en">Animal Empathy</span>)</span> ❤️. الشخص الـ <span class="en">Vegan</span> ممكن ياكل <span class="en">Junk food</span> 🍟 عادي طالما مفيهوش حيوانات، إنما الـ <span class="en">PBD</span> بيركز على جودة الأكل (<span class="en">Whole foods</span>).</p>
+<span class="chip chip-cyan" style="margin-top:8px">💕 Animal Empathy</span>
+</div>
+</div>
+
+<div class="glass scan card span-full rv" style="margin-bottom:22px"><div class="scan-line"></div><span class="wm">📊</span>
+<h3 class="h-md">📊 طيف الأنظمة الغذائية (<span class="en">The Spectrum of Diets</span>)</h3>
+<p>تخيل معايا مدرج 📐، من الأكثر تقييداً للأكثر حرية:</p>
+<div class="spectrum">
+<div class="sp-item"><div class="sp-bar" style="width:100%;max-width:300px;background:linear-gradient(90deg,#22c55e,#16a34a)"></div><span class="sp-label"><span class="en he">Vegan diet</span> 🌱: صفر منتجات حيوانية.</span></div>
+<div class="sp-item"><div class="sp-bar" style="width:80%;max-width:240px;background:linear-gradient(90deg,#34d399,#22d3ee)"></div><span class="sp-label"><span class="en hi">Lacto-ovo-vegetarian</span> 🥚🥛: مفيش لحمة ولا فراخ ولا سمك، بس بياكلوا (بيض <span class="en">Eggs = Ovo</span>) و(ألبان <span class="en">Dairy = Lacto</span>).</span></div>
+<div class="sp-item"><div class="sp-bar" style="width:65%;max-width:195px;background:linear-gradient(90deg,#22d3ee,#3b82f6)"></div><span class="sp-label"><span class="en hi">Pesco-vegetarian (Pescatarian)</span> 🐟: بياكلوا سمك مع النباتات، لكن مفيش لحمة ولا فراخ.</span></div>
+<div class="sp-item"><div class="sp-bar" style="width:45%;max-width:135px;background:linear-gradient(90deg,#a78bfa,#8b5cf6)"></div><span class="sp-label"><span class="en hp">Flexitarian (Semi-vegetarian)</span> 🔄: نظام مرن. أساسه نباتي، بس بيسمحوا بأكل حيواني من وقت للتاني بكميات محددة.</span></div>
+<div class="sp-item"><div class="sp-bar" style="width:30%;max-width:90px;background:linear-gradient(90deg,#f59e0b,#ef4444)"></div><span class="sp-label"><span class="en hg">Omnivorous diet</span> 🍔: بياكلوا كل حاجة (النظام العادي بتاع معظم الناس).</span></div>
+</div>
+</div>
+
+<div class="bento b-asym rv">
+<div class="glass scan card"><div class="scan-line"></div><span class="wm">🌿</span>
+<span class="big-emoji">🌿</span>
+<h3 class="h-md">أنواع الـ <span class="en">Vegan Diet</span></h3>
+<p><span class="he">Whole-food vegan diet</span> 🥬: نباتي صحي، بيمنع الأكل المصنع (<span class="en">Processed foods</span>).</p>
+<p><span class="hi">Whole-food low-fat vegan diet</span> 🥦: بيمنع الأكل المصنع والنباتات العالية في الدهون (زي الزيوت الكتير).</p>
+<p><span class="hp">Raw food vegan diet</span> 🥑: بياكل الأكل النيئ فقط (بيمنع أي أكل مطبوخ 🔥).</p>
+</div>
+<div class="glass scan card"><div class="scan-line"></div><span class="wm">⭐</span>
+<span class="big-emoji">⭐</span>
+<h3 class="h-md">القاعدة الذهبية</h3>
+<p style="font-weight:600;color:var(--emerald)">الـ <span class="en">Whole Foods Plant-Based Nutrition</span>:</p>
+<div class="rule-grid">
+<div class="rule-yes"><h4 style="color:var(--emerald)">✅ كُل كتير:</h4><ul class="rule-list"><li>🥬 خضروات (ورقية، صليبية، جذور، نشويات، مشروم)</li><li>🍎 فواكه</li><li>🫘 بقوليات (<span class="en">Legumes</span>)</li><li>🌾 حبوب كاملة (<span class="en">Whole grains</span>)</li><li>🥜 مكسرات/بذور، وأعشاب</li></ul></div>
+<div class="rule-no"><h4 style="color:var(--red)">❌ تجنب:</h4><ul class="rule-list"><li>🥩 اللحوم</li><li>🥛 الألبان</li><li>🥚 البيض</li><li>🍬 السكر المكرر</li><li>🍞 الدقيق المكرر</li><li>🛢️ الزيوت/السمن الصناعي</li></ul></div>
+</div>
+</div>
+</div>
+</div>
+</section>
+
+<!-- ═══ INTERLEAVED: Part 1 Flashcards ═══ -->
+<section id="fc1-sec">
+<div class="section-inner">
+<div class="sec-head rv"><span class="sec-emoji">🃏</span><span class="sec-tag">PRACTICE — PART 01</span><h2 class="h-lg glitch-head scramble">اختبر فهمك — المصطلحات</h2><p class="txt" style="text-align:center">اضغط على الكارت 👆 عشان يتقلب</p></div>
+<div class="fc-grid rv" id="fc1"></div>
+</div>
+</section>
+
+<div class="vis-break"><span class="vb-line"></span><span class="vb-icon">🍽️</span><span class="vb-line"></span></div>
+
+<!-- ═══════════ PART 2 ═══════════ -->
+<section id="part2">
+<div class="section-inner">
+<div class="sec-head rv"><span class="sec-emoji">🍽️</span><span class="sec-tag">PART 02</span><h2 class="h-xl scramble glitch-head">الأنظمة الغذائية الشهيرة</h2><p class="h-md" style="color:var(--text-dim)">Famous Diets & PDI</p></div>
+<p class="rv txt" style="text-align:center;max-width:750px;margin:0 auto 30px">العلماء عملوا أنظمة غذائية مشهورة بتعتمد بشكل كبير على النباتات لعلاج أمراض معينة 🔬:</p>
+<div class="bento b3 rv" style="margin-bottom:22px">
+<div class="glass scan card"><div class="scan-line"></div><span class="wm">🥜</span><span class="big-emoji">🥜</span><h3 class="h-sm"><span class="en">The Portfolio Diet</span></h3><p>اتعمل مخصوص عشان يقلل <span class="hi">الكوليسترول</span>. فيه 4 مكونات رئيسية:</p><div class="stat-wrap"><div class="stat-label"><span>🥜 مكسرات</span><span class="mono">42g</span></div><div class="stat-bar"><div class="stat-fill" data-width="80%" style="background:var(--emerald)"></div></div></div><div class="stat-wrap"><div class="stat-label"><span>🫘 بروتين نباتي</span><span class="mono">50g</span></div><div class="stat-bar"><div class="stat-fill" data-width="90%" style="background:var(--cyan)"></div></div></div><div class="stat-wrap"><div class="stat-label"><span>🌾 ألياف ذائبة</span><span class="mono">20g</span></div><div class="stat-bar"><div class="stat-fill" data-width="60%" style="background:var(--purple)"></div></div></div><div class="stat-wrap"><div class="stat-label"><span>🧪 Plant sterols</span><span class="mono">2g</span></div><div class="stat-bar"><div class="stat-fill" data-width="25%" style="background:var(--gold)"></div></div></div></div>
+<div class="glass scan card"><div class="scan-line"></div><span class="wm">🫒</span><span class="big-emoji">🫒</span><h3 class="h-sm"><span class="en">Mediterranean-style Diet</span></h3><p>نظام البحر المتوسط 🌊: بيركز على <span class="he">زيت الزيتون</span>، الزيتون، المكسرات.</p><h3 class="h-sm" style="margin-top:14px"><span class="en">DASH Diet</span></h3><p><span class="en">Dietary Approaches to Stop Hypertension</span>: ده عشان نوقف <span class="hi">ضغط الدم العالي</span> 💓. بيقلل الصوديوم والسكر، وبيركز على الألبان خالية/قليلة الدسم، وبروتين زي السمك والفراخ والبقوليات.</p></div>
+<div class="glass scan card"><div class="scan-line"></div><span class="wm">🌍</span><span class="big-emoji">🌍</span><h3 class="h-sm"><span class="en">Planetary Health Diet</span></h3><p>بيركز على <span class="he">تقليل الأكل المصنع بشدة لإنقاذ الكوكب</span> 🌎.</p><h3 class="h-sm" style="margin-top:14px"><span class="en">Nordic-style Diet</span></h3><p>بيركز على الألبان قليلة الدسم، السمك 🐟، التوت 🫐، والجاودار (<span class="en">Rye</span>)، والأكل المحلي.</p></div>
+</div>
+<div class="bento b2 rv">
+<div class="glass scan card"><div class="scan-line"></div><span class="wm">📏</span><h3 class="h-md">📏 مؤشر <span class="en">PDI</span></h3><p>إزاي بنقيس التزام الناس بالأكل النباتي؟ عن طريق مؤشر اسمه <span class="en mono">PDI (Plant-based Dietary Indexes)</span>.</p><p>المؤشر ده بيدي نقط <span class="he">موجبة (+)</span> للأكل النباتي، ونقط <span class="hr">سالبة (-)</span> للأكل الحيواني. وفي دراسات بتفرق بين الأكل النباتي "الصحي" 💚 (زي الحبوب الكاملة) وتديله (+)، والأكل النباتي "غير الصحي" 🍟 (زي الدقيق الأبيض) وتديله (-).</p><div class="callout callout-gold"><span class="hg">⚠️ عيبه الوحيد:</span> إنه مابيديش تفاصيل دقيقة عن كمية الـ <span class="en">Nutrients</span> بالظبط.</div></div>
+<div class="glass scan card"><div class="scan-line"></div><span class="wm">🛡️</span><h3 class="h-md">🛡️ هل النظام ده آمن؟</h3><p>أكاديمية التغذية وعلميات الغذاء الأمريكية 🇺🇸 (<span class="en">Academy of Nutrition and Dietetics</span>) قالت بصريح العبارة: <span class="he">النظام النباتي المخطط له كويس آمن ومغذي في كل مراحل الحياة</span> ✅ (حمل 🤰، رضاعة 🤱، طفولة 👶، مراهقة، شيخوخة 👴، وحتى للرياضيين 🏋️). وكمان هو الأفضل كوكبياً 🌍 (بيستهلك موارد ومساحات أرض أقل بكتير من رعاية المواشي).</p><p style="margin-top:8px">الدكتور <span class="en">T. Colin Campbell</span> بيقول إن التغذية لازم تتشاف بنظرة شمولية (<span class="en">Wholistic</span>) 🔄، مش مجرد نظرة اختزالية لمكون واحد. الأكل كله بيشتغل مع بعضه بألف ميكانيزم ⚙️.</p></div>
+</div>
+</div>
+</section>
+
+<!-- ═══ INTERLEAVED: Matching Game after Part 2 ═══ -->
+<section id="match-sec">
+<div class="section-inner">
+<div class="sec-head rv"><span class="sec-emoji">🔗</span><span class="sec-tag">PRACTICE — MATCH CONCEPTS</span><h2 class="h-lg glitch-head scramble">ربط المفاهيم</h2><p class="txt" style="text-align:center">اضغط على المصطلح 👈 ثم اضغط على التعريف المناسب ليه</p></div>
+<div class="glass card rv" id="match-area" style="padding:30px;clip-path:none;border-radius:22px"><div class="match-cols" id="match-cols"></div><p id="match-status" style="text-align:center;margin-top:16px;font-weight:700;color:var(--cyan);opacity:0;transition:opacity .3s"></p></div>
+</div>
+</section>
+
+<div class="vis-break"><span class="vb-line"></span><span class="vb-icon">🛡️</span><span class="vb-line"></span></div>
+
+<!-- ═══════════ PART 3 ═══════════ -->
+<section id="part3">
+<div class="section-inner">
+<div class="sec-head rv"><span class="sec-emoji">🛡️</span><span class="sec-tag">PART 03</span><h2 class="h-xl scramble glitch-head">أسلحة النظام النباتي السحرية</h2><p class="h-md" style="color:var(--text-dim)">Fibers & Antioxidants</p></div>
+<p class="rv txt" style="text-align:center;max-width:700px;margin:0 auto 30px">ليه النظام ده بيعالج الأمراض؟ 🤔 السر في حاجتين: <span class="hi">الألياف</span> 🧶 و<span class="hp">مضادات الأكسدة</span> 🛡️.</p>
+<div class="glass scan card span-full rv" style="margin-bottom:22px"><div class="scan-line"></div><span class="wm">🧶</span><h3 class="h-lg">1️⃣ <span class="en">Dietary Fiber</span> (الألياف الغذائية) 🧶</h3><p>الألياف دي جزء من النبات الإنزيمات بتاعتنا مبتعرفش تهضمه. وبتتقسم لنوعين مهمين جداً:</p><span class="chip chip-red">🚨 Exam Alert</span></div>
+<div class="bento b2 rv" style="margin-bottom:22px">
+<div class="glass scan card"><div class="scan-line"></div><span class="wm">💧</span><h3 class="h-md" style="color:var(--emerald)">A. <span class="en">Soluble Fiber</span> 💧</h3><p style="font-size:.82rem;color:var(--purple)">(الألياف الذائبة / Fermentable / Prebiotic)</p><p><strong>بتعمل إيه؟</strong> بتدوب في المايه وتعمل مادة شبه الجيلي 🫧 (<span class="en">Gel-like matrix</span>).</p><p><strong>موجودة فين؟</strong> الشوفان 🥣، الشعير، المشروم 🍄، البقوليات، الموز 🍌. أمثلة: <span class="en mono">Beta-glucans</span>, <span class="en mono">Psyllium</span> (بيحتفظ بالمايه ويسهل الإخراج)، <span class="en mono">Inulin</span> (في جذور الهندباء).</p><h4 class="h-sm" style="margin-top:12px">⚙️ الميكانيزم:</h4><p>• بتبطئ تفريغ المعدة (<span class="en">Delays stomach emptying</span>) فتديك إحساس بالشبع لمدة أطول ⏳.</p><p>• بتبطئ امتصاص الجلوكوز (<span class="en">Retards glucose absorption</span>) فبتضبط السكر في الدم 📉.</p><p>• بتقلل الـ <span class="en">LDL</span> (الكوليسترول الضار) في الدم ⬇️.</p><div class="callout callout-cyan" style="margin-top:12px"><h4 class="h-sm">🦠 أهم ميكانيزم (<span class="en">Gut Microbiota</span>):</h4><p>البكتيريا النافعة في القولون (زي <span class="en mono">Lactobacillus</span> و <span class="en mono">Bifidobacteria</span>) بتتغذى على الألياف دي وتعملها تخمر 🧪 (<span class="en">Fermentation</span>) وتطلع كنز 💎 اسمه <span class="en mono">SCFAs (Short-Chain Fatty Acids)</span> زي الـ (<span class="en">Acetate, Propionate, Butyrate</span>).</p></div></div>
+<div class="glass scan card"><div class="scan-line"></div><span class="wm">🧱</span><h3 class="h-md" style="color:var(--gold)">B. <span class="en">Insoluble Fiber</span> 🧱</h3><p style="font-size:.82rem;color:var(--purple)">(الألياف غير الذائبة)</p><p><strong>بتعمل إيه؟</strong> مبتدوبش في المايه. بتزود حجم البراز (<span class="en">Adds bulk to faecal matter</span>).</p><p><strong>موجودة فين؟</strong> الحبوب الكاملة 🌾، الخضار 🥬، نخالة القمح (<span class="en">Wheat bran</span>)، الـ <span class="en mono">Cellulose</span>، والـ <span class="en mono">Lignin</span>.</p><p><strong>أهميتها:</strong> بتحفز إفراز المخاط في الأمعاء الغليظة، بتسرع حركة الأمعاء ⚡، وبتمنع الإمساك (<span class="en">Prevents constipation</span>) عن طريق الـ <span class="en">Mechanical stimulation</span>.</p><div class="callout callout-cyan" style="margin-top:12px"><h4 class="h-sm">💎 إيه حوار الـ SCFAs ده؟</h4><p>دي أحماض دهنية بتمتص وتأثر على الكبد والبنكرياس. بتشتغل كمضادات التهاب 🔥 (<span class="en">Anti-inflammatory</span>)، بتحمي من سرطان القولون 🛡️ (<span class="en">Counteract carcinogenesis</span>)، بتحافظ على جدار الأمعاء (<span class="en">Intestinal barrier</span>)، وبتقلل الـ <span class="en">Oxidative stress</span>. لو البكتيريا دي اختلت ⚠️، جدار الأمعاء هيتأثر وتزيد الأمراض.</p></div></div>
+</div>
+<div class="glass scan card span-full rv" style="margin-bottom:22px;text-align:center;padding:30px"><div class="scan-line"></div><h3 class="h-md">🔬 مقارنة بصرية: الألياف الذائبة vs غير الذائبة</h3><div class="ring-row"><div class="ring-item"><svg width="100" height="100" viewBox="0 0 100 100"><circle cx="50" cy="50" r="42" fill="none" stroke="rgba(255,255,255,.06)" stroke-width="8"/><circle cx="50" cy="50" r="42" fill="none" stroke="var(--emerald)" stroke-width="8" stroke-dasharray="264" stroke-dashoffset="66" stroke-linecap="round" transform="rotate(-90 50 50)"><animate attributeName="stroke-dashoffset" from="264" to="66" dur="1.5s" fill="freeze"/></circle><text x="50" y="54" text-anchor="middle" class="ring-val" font-size="14">75%</text></svg><span class="ring-label">تخمر بكتيري</span></div><div class="ring-item"><svg width="100" height="100" viewBox="0 0 100 100"><circle cx="50" cy="50" r="42" fill="none" stroke="rgba(255,255,255,.06)" stroke-width="8"/><circle cx="50" cy="50" r="42" fill="none" stroke="var(--cyan)" stroke-width="8" stroke-dasharray="264" stroke-dashoffset="132" stroke-linecap="round" transform="rotate(-90 50 50)"><animate attributeName="stroke-dashoffset" from="264" to="132" dur="1.5s" fill="freeze"/></circle><text x="50" y="54" text-anchor="middle" class="ring-val" font-size="14">50%</text></svg><span class="ring-label">تقليل LDL</span></div><div class="ring-item"><svg width="100" height="100" viewBox="0 0 100 100"><circle cx="50" cy="50" r="42" fill="none" stroke="rgba(255,255,255,.06)" stroke-width="8"/><circle cx="50" cy="50" r="42" fill="none" stroke="var(--gold)" stroke-width="8" stroke-dasharray="264" stroke-dashoffset="92" stroke-linecap="round" transform="rotate(-90 50 50)"><animate attributeName="stroke-dashoffset" from="264" to="92" dur="1.5s" fill="freeze"/></circle><text x="50" y="54" text-anchor="middle" class="ring-val" font-size="14" fill="var(--gold)">65%</text></svg><span class="ring-label">Bulk to stool</span></div><div class="ring-item"><svg width="100" height="100" viewBox="0 0 100 100"><circle cx="50" cy="50" r="42" fill="none" stroke="rgba(255,255,255,.06)" stroke-width="8"/><circle cx="50" cy="50" r="42" fill="none" stroke="var(--purple)" stroke-width="8" stroke-dasharray="264" stroke-dashoffset="40" stroke-linecap="round" transform="rotate(-90 50 50)"><animate attributeName="stroke-dashoffset" from="264" to="40" dur="1.5s" fill="freeze"/></circle><text x="50" y="54" text-anchor="middle" class="ring-val" font-size="14" fill="var(--purple)">85%</text></svg><span class="ring-label">حماية القولون</span></div></div></div>
+<div class="glass scan card span-full rv" style="margin-bottom:22px"><div class="scan-line"></div><span class="wm">🛡️</span><h3 class="h-lg">2️⃣ <span class="en">Antioxidants</span> (مضادات الأكسدة) 🛡️</h3><p>دي مركبات بتحمي الخلايا من التدمير 💥 بسبب الـ <span class="en">Free radicals</span> (الشوارد الحرة) عن طريق إنها بتتبرع لها بإلكترون ⚛️ وتوقف سلسلة الأكسدة (<span class="en">Mitigating cellular damage</span>).</p></div>
+<div class="bento b3 rv">
+<div class="glass scan card"><div class="scan-line"></div><span class="big-emoji">🍇</span><h4 class="h-sm"><span class="en">Polyphenols</span> (البوليفينول)</h4><p>بتعدّل الإنزيمات ⚙️، بتمنع السيتوكينات تمسك في الخلايا السرطانية، وبتحمي من الأكسدة. مثال مهم: <span class="en mono">Ferulic acid</span> (موجود في الحبوب والفاكهة). وكمان بعض البوليفينول في الشاي الأخضر 🍵 والأسود بتقدر توقف نمو بكتيريا خطيرة زي الـ <span class="en mono">H. pylori</span> والـ <span class="en mono">Salmonella</span>.</p></div>
+<div class="glass scan card"><div class="scan-line"></div><span class="big-emoji">🥕</span><h4 class="h-sm"><span class="en">Carotenoids</span> & <span class="en">Anthocyanins</span></h4><p><span class="hi">Carotenoids (الكاروتينات)</span>: دي الـ <span class="en">Precursors</span> اللي بيتصنع منه فيتامين A. بتوقف تدمير الخلايا (<span class="en">Lipid peroxidation</span>) ومهمة للمناعة 🛡️.</p><p style="margin-top:8px"><span class="hp">Anthocyanins (الأنثوسيانين)</span> 🫐: بتمسك في أيونات المعادن (زي النحاس) فبتمنعها إنها تحفز تكوين الـ <span class="en">Free radicals</span>. وبتمنع أكسدة الـ <span class="en">LDL</span>.</p></div>
+<div class="glass scan card"><div class="scan-line"></div><span class="big-emoji">🍊</span><h4 class="h-sm"><span class="en">Vitamin C & Vitamin E</span></h4><p><span class="hi">Vit C (<span class="en">Ascorbic acid</span>)</span>: بطل الـ <span class="en">Water-soluble</span> 💧. بيدخل في إشارات الخلايا والـ <span class="en">Apoptosis</span>. وظيفته العبقرية إنه بيعمل <span class="en he">Recycle</span> (إعادة تدوير ♻️) لـ <span class="en">Vit E</span> عشان يرجعه يشتغل تاني!</p><p style="margin-top:8px"><span class="hp">Vit E (<span class="en">Tocopherols</span>)</span>: بطل الـ <span class="en">Fat-soluble</span> 🧈. بيحمي الـ DNA 🧬 وبيمنع الـ <span class="en">Lipid peroxidation</span> الناشئ من معادن زي النحاس والحديد.</p></div>
+</div>
+</div>
+</section>
+
+<!-- ═══ INTERLEAVED: Part 3 Flashcards ═══ -->
+<section id="fc3-sec">
+<div class="section-inner">
+<div class="sec-head rv"><span class="sec-emoji">🃏</span><span class="sec-tag">PRACTICE — PART 03</span><h2 class="h-lg glitch-head scramble">اختبر فهمك — الألياف ومضادات الأكسدة</h2></div>
+<div class="fc-grid rv" id="fc3"></div>
+</div>
+</section>
+
+<div class="vis-break"><span class="vb-line"></span><span class="vb-icon">🏥</span><span class="vb-line"></span></div>
+
+<!-- ═══════════ PART 4 ═══════════ -->
+<section id="part4">
+<div class="section-inner">
+<div class="sec-head rv"><span class="sec-emoji">🏥</span><span class="sec-tag">PART 04</span><h2 class="h-xl scramble glitch-head">الأمراض التي يعالجها النظام النباتي</h2><p class="h-md" style="color:var(--text-dim)">Clinical Significance</p></div>
+<div class="bento b2 rv" style="margin-bottom:22px">
+<div class="glass scan card"><div class="scan-line"></div><span class="wm">⚖️</span><span class="big-emoji">⚖️</span><h3 class="h-md">1. <span class="en">Overweight & Obesity</span> (السمنة)</h3><p>النظام ده بيقلل الوزن عشان فيه <span class="en">Fat</span> قليل و <span class="en">Fiber</span> كتير 🧶، فبتاكل كمية كبيرة بسعرات قليلة.</p><p>الدراسات لقت إن الـ <span class="en">BMI</span> بيزيد 📈 كل ما كمية الأكل الحيواني تزيد في الدايت.</p><p>دراسة قالت: كل سنة على نظام <span class="en">Vegan</span>، خطر السمنة بيقل بنسبة <span class="he">7%</span> 📉. والناس الأوفر ويت لما مشيوا عليه، الكتلة الدهنية والدهون الحشوية (<span class="en">Visceral fat</span>) قلت بشكل ملحوظ مقارنة بغيرهم.</p><div class="callout callout-gold"><span class="hg">⚠️ ملحوظة:</span> كل زيادة 250 جرام لحمة في اليوم بتزود الوزن 2 كيلو بعد 5 سنين! 😱</div></div>
+<div class="glass scan card"><div class="scan-line"></div><span class="wm">❤️</span><span class="big-emoji">❤️</span><h3 class="h-md">2. <span class="en">CVD</span> (أمراض القلب)</h3><p><strong>الميكانيزم الإيجابي:</strong> الدايت النباتي بيقلل الكوليسترول ⬇️، الضغط، السكر، وبيحسن وظائف بطانة الأوعية الدموية (<span class="en">Endothelial function</span>).</p><p>البوتاسيوم (<span class="en">Potassium</span>) بيكتر في الدايت ده، وهو بيحافظ على توازن الإلكتروليت وبيقلل الضغط وخطر السكتات الدماغية 🧠 (<span class="en">Stroke</span>). والمغنيسيوم كمان بيضبط الضغط.</p><p>كل 10 جرام ألياف ذائبة زيادة بتقلل خطر أزمات القلب بـ <span class="hi">14%</span> والوفاة بـ <span class="hi">27%</span> 💪.</p><p>البوليفينول بيحفز إنتاج الـ <span class="en mono">Nitric Oxide (NO)</span> اللي بيعمل توسيع للأوعية الدموية (<span class="en">Vascular homeostasis</span>) وبيمنع تجمع الصفائح الدموية.</p></div>
+</div>
+<div class="glass card span-full rv" style="margin-bottom:22px;border-color:rgba(239,68,68,.25);clip-path:none;border-radius:22px"><h3 class="h-md" style="color:var(--red)">🚨 الميكانيزم العبقري: <span class="en">TMAO Pathway</span></h3><p>اللحمة الحمراء 🥩 والفراخ 🍗 والسمك 🐟 فيهم مركبات اسمها (<span class="en mono">Choline</span> و <span class="en mono">L-carnitine</span>). لما بتاكلهم، بكتيريا الأمعاء 🦠 بتكسرهم لمادة اسمها <span class="en mono">TMA</span>، الكبد ياخد الـ <span class="en">TMA</span> يحوله لمادة اسمها <span class="en mono">TMAO</span>. المادة دي كارثة 💀، <span class="hr">بتعمل تصلب شرايين (<span class="en">Atherosclerosis</span>) وجلطات والتهابات</span>. <span class="he">النباتيين معندهمش الـ Pathway ده!</span> 🎉</p><div class="flow-wrap" style="margin-top:16px"><svg viewBox="0 0 700 80" width="100%" style="max-width:650px"><defs><marker id="arw" markerWidth="8" markerHeight="6" refX="8" refY="3" orient="auto"><polygon points="0 0, 8 3, 0 6" fill="#ef4444"/></marker></defs><rect x="0" y="20" width="110" height="42" rx="10" fill="rgba(239,68,68,.12)" stroke="#ef4444" stroke-width="1.5"/><text x="55" y="46" text-anchor="middle" fill="#fff" font-size="11" font-family="Tajawal">🥩 اللحوم</text><line x1="110" y1="41" x2="155" y2="41" stroke="#ef4444" stroke-width="1.5" marker-end="url(#arw)"/><rect x="158" y="20" width="120" height="42" rx="10" fill="rgba(245,158,11,.1)" stroke="#f59e0b" stroke-width="1.5"/><text x="218" y="38" text-anchor="middle" fill="#f59e0b" font-size="10" font-family="JetBrains Mono">Choline</text><text x="218" y="52" text-anchor="middle" fill="#f59e0b" font-size="10" font-family="JetBrains Mono">L-carnitine</text><line x1="278" y1="41" x2="323" y2="41" stroke="#f59e0b" stroke-width="1.5" marker-end="url(#arw)"/><rect x="326" y="20" width="80" height="42" rx="10" fill="rgba(167,139,250,.1)" stroke="#a78bfa" stroke-width="1.5"/><text x="366" y="46" text-anchor="middle" fill="#a78bfa" font-size="12" font-weight="700" font-family="JetBrains Mono">TMA</text><text x="366" y="14" text-anchor="middle" fill="#94a3b8" font-size="9" font-family="Tajawal">🦠 بكتيريا الأمعاء</text><line x1="406" y1="41" x2="451" y2="41" stroke="#a78bfa" stroke-width="1.5" marker-end="url(#arw)"/><rect x="454" y="20" width="90" height="42" rx="10" fill="rgba(239,68,68,.15)" stroke="#ef4444" stroke-width="2"/><text x="499" y="46" text-anchor="middle" fill="#ef4444" font-size="13" font-weight="700" font-family="JetBrains Mono">TMAO</text><text x="499" y="14" text-anchor="middle" fill="#94a3b8" font-size="9" font-family="Tajawal">🫀 الكبد</text><line x1="544" y1="41" x2="589" y2="41" stroke="#ef4444" stroke-width="1.5" marker-end="url(#arw)"/><rect x="592" y="20" width="105" height="42" rx="10" fill="rgba(239,68,68,.25)" stroke="#ef4444" stroke-width="2"/><text x="644" y="46" text-anchor="middle" fill="#fff" font-size="10" font-family="Tajawal">💀 تصلب شرايين</text></svg></div><div class="callout callout-red" style="margin-top:12px"><span class="hr">⚠️ تحذير:</span> لو النباتي مأخدش فيتامين <span class="en">B12</span>، هيحصل عنده تراكم لمادة اسمها <span class="en mono">Homocysteine</span> (<span class="en">Hyperhomocysteinemia</span>)، ودي بتدمر الأوعية الدموية وتعمل جلطات! 💔 وكمان خطر لو أكل <span class="en">Junk food</span> نباتي مليان سكر وملح و <span class="en">Trans fats</span>.</div></div>
+<div class="bento b3 rv">
+<div class="glass scan card"><div class="scan-line"></div><span class="big-emoji">💉</span><h3 class="h-md">3. <span class="en">Diabetes</span> (السكر)</h3><p>الألياف الذائبة (<span class="en">Soluble fibers</span>) بتبطئ خروج الأكل من المعدة ⏳، فالسكر يمتص بالراحة.</p><p>بيمنع الـ <span class="en">Beta cell dysfunction</span> (فشل خلايا البنكرياس) وبيقلل الـ <span class="en">Insulin resistance</span> 📉 (مقاومة الأنسولين).</p></div>
+<div class="glass scan card"><div class="scan-line"></div><span class="big-emoji">🧠</span><h3 class="h-md">4. <span class="en">Cognitive Function</span></h3><p><span class="en mono">Quercetin</span> (كيرسيتين) 🌸: مركب نباتي بيشتغل كـ <span class="he">مضاد اكتئاب طبيعي (<span class="en">Natural Antidepressant</span>)</span> 💊.</p><p>إزاي؟ بيعمل <span class="en">Inhibition</span> لإنزيم الـ <span class="en mono">MAO (Monoamine oxidase)</span> 🔒. الإنزيم ده هو اللي بيكسر السيروتونين والدوبامين والنورإبينفرين. فلما نوقفه، نواقل السعادة بتزيد في المخ 🎉 والقلق يقل.</p><p>بيحمي من الزهايمر 🧓 (<span class="en">Alzheimer's</span>).</p><p>النباتيين عندهم دلالات التهاب أقل 📉 (<span class="en mono">CRP</span> و <span class="en mono">TNF-alpha/IL-10 ratio</span> أقل).</p></div>
+<div class="glass scan card"><div class="scan-line"></div><span class="big-emoji">🦴</span><h3 class="h-md">5 & 6. العظام والعضلات</h3><p><span class="chip chip-red">⚠️ خطر للـ Vegans</span></p><p style="margin-top:8px">ممكن يجيلهم هشاشة عظام (<span class="en">Osteoporosis</span>) والـ <span class="en">BMD</span> بتاعتهم تقل، بسبب نقص: الكالسيوم، فيتامين D ☀️، فيتامين B12، والأوميجا 3. لازم يركز على الكالسيوم وفيتامين D وفيتامين K.</p><p style="margin-top:8px"><span class="hi">العضلات (<span class="en">Sarcopenia</span>) 💪:</span> الأكل النباتي "الصحي" بيقلل خطر الضعف بفضل مضادات الأكسدة (<span class="en">Vit C, E, Selenium</span>). لكن عشان ياخد بروتين كافي، لازم يزود حجم الوجبة (<span class="en">Increasing portion sizes</span>). ⚠️ النباتيين بيكون عندهم نقص في الزنك والسيلينيوم.</p></div>
+</div>
+</div>
+</section>
+
+<div class="vis-break"><span class="vb-line"></span><span class="vb-icon">⚗️</span><span class="vb-line"></span></div>
+
+<!-- ═══════════ PART 5 ═══════════ -->
+<section id="part5">
+<div class="section-inner">
+<div class="sec-head rv"><span class="sec-emoji">⚗️</span><span class="sec-tag">PART 05 — VERY HIGH YIELD 🔥</span><h2 class="h-xl scramble glitch-head">التحديات التغذوية وكيفية حلها</h2><p class="h-md" style="color:var(--text-dim)">Nutritional Factors</p></div>
+<p class="rv txt" style="text-align:center;max-width:700px;margin:0 auto 30px">هنا بقى شغل الدكاترة الحقيقي 👨‍⚕️. إيه اللي ناقص في جسم الـ <span class="en">Vegan</span> وإزاي نعالجه؟ 💊</p>
+<div class="bento b2 rv" style="margin-bottom:22px">
+<div class="glass scan card"><div class="scan-line"></div><span class="wm">💪</span><span class="big-emoji">💪</span><h3 class="h-md">1. <span class="en">Protein</span> (البروتين)</h3><p><strong>المشكلة 🔴:</strong> توزيع الـ <span class="en">Amino acids</span> في النبات مش مثالي زي اللحوم.</p><p><strong>الحل 🟢:</strong> الدمج (<span class="en">Complementary consumption</span>). ياكل بقوليات (<span class="en">Legumes</span>) 🫘 مع حبوب (<span class="en">Cereals</span>) 🌾 عشان يكملوا بعض ويوصل للـ <span class="en">RDA</span> اللي هو <span class="mono">0.8g/kg</span>.</p><p><span class="he">الصويا (<span class="en">Soy</span>) 🌱:</span> هي الـ <span class="en">Superstar</span> ⭐ هنا. هضمها ممتاز (<span class="en">Enhanced digestibility</span>) وقريبة جداً من البروتين الحيواني في مقياس اسمه <span class="en mono">DIAAS</span>.</p><p>أكل البقوليات بيقلل الكوليسترول والـ <span class="en">LDL</span> والدهون الثلاثية، وبيحمي من سرطان المعدة والبروستاتا والقولون 🛡️.</p></div>
+<div class="glass scan card" style="border-color:rgba(239,68,68,.25)"><div class="scan-line"></div><span class="wm">🚨</span><span class="big-emoji">🚨</span><h3 class="h-md" style="color:var(--red)">2. <span class="en">Vitamin B12</span> ⚠️ أخطر واحد</h3><p><strong>المشكلة 🔴:</strong> موجود <span class="hr">فقط</span> في المنتجات الحيوانية. نسبة نقصه عند الـ <span class="en">Vegans</span> بتوصل لـ <span class="mono hr">80%!</span> 😱</p><p><strong>وظيفته:</strong> تصنيع الدم 🩸 (<span class="en">Haematopoiesis</span>) ووظائف الأعصاب ⚡.</p><p><strong>أعراض النقص:</strong> أنيميا خبيثة (<span class="en">Megaloblastic anaemia</span>)، وأعراض عصبية (تنميل 🖐️، ضعف إحساس، صعوبة في المشي 🚶، فقدان ذاكرة 🧠، خرف <span class="en">Dementia</span>، اكتئاب 😔، وحتى ذهان <span class="en">Psychosis</span>).</p><p><strong>الحل 🟢:</strong> لازم <span class="en he">Supplementation</span> 💊 أو أكل مدعم (<span class="en">Fortified</span>) زي <span class="en">Plant milk</span> 🥛، حبوب الفطار 🥣، أو الخميرة الغذائية (<span class="en">Nutritional yeast</span>). الاحتياج اليومي للبالغين <span class="mono">2.4 ميكروجرام</span>.</p></div>
+</div>
+<div class="bento b3 rv" style="margin-bottom:22px">
+<div class="glass scan card"><div class="scan-line"></div><span class="big-emoji">☀️</span><h3 class="h-md">3. <span class="en">Vitamin D</span></h3><p><strong>المشكلة 🔴:</strong> مستوياته بتكون قليلة عند النباتيين اللي مش بيتعرضوا للشمس ☁️ وبياكلوا أقل من الاحتياج اليومي (<span class="mono">600-800 IU</span>).</p><p><strong>النتيجة:</strong> نقص كثافة العظام والتعرض للكسور 🦴 (<span class="en">Premature bone ageing</span>).</p><p><strong>الحل 🟢:</strong> التعرض للشمس ☀️ + ألبان نباتية مدعمة أو <span class="en">Supplements</span> 💊.</p></div>
+<div class="glass scan card"><div class="scan-line"></div><span class="big-emoji">🐟</span><h3 class="h-md">4. <span class="en">Omega-3</span></h3><p>النباتات بتدينا الـ <span class="en">Precursor</span> اللي اسمه <span class="en mono">ALA</span>.</p><p>الجسم بيحول الـ <span class="en">ALA</span> لـ <span class="en">EPA</span> بنسبة <span class="hg">5-15%</span> ولـ <span class="en">DHA</span> بنسبة <span class="hr">أقل من 1%!</span> 😰</p><div class="stat-wrap"><div class="stat-label"><span>ALA → EPA</span><span class="mono">5-15%</span></div><div class="stat-bar"><div class="stat-fill" data-width="15%" style="background:var(--cyan)"></div></div></div><div class="stat-wrap"><div class="stat-label"><span>ALA → DHA</span><span class="mono">&lt;1%</span></div><div class="stat-bar"><div class="stat-fill" data-width="2%" style="background:var(--red)"></div></div></div><p style="margin-top:8px"><strong>الحل 🟢:</strong> مصادر الـ <span class="en">ALA</span> (عين جمل 🌰، بذور الشيا، بذور الكتان، زيت الكانولا). الأفضل ياخد <span class="en he">Supplements</span> 💊 من الطحالب (<span class="en">Algal sources</span> 🌊).</p></div>
+<div class="glass scan card"><div class="scan-line"></div><span class="big-emoji">🦷</span><h3 class="h-md">5. <span class="en">Calcium</span></h3><p><strong>المشكلة 🔴:</strong> النباتات فيها مركبات زي الـ <span class="en mono">Oxalates</span> والـ <span class="en mono">Phytates</span> والألياف، ودي بتمسك في الكالسيوم وتمنع امتصاصه! 🔒</p><p><strong>الحل 🟢:</strong> ناكل خضار نسبة الأكسالات فيه قليلة (<span class="en">Low-oxalate</span>) زي <span class="he">البروكلي 🥦 والـ Kale</span>. التوفو، الطحينة، والألبان النباتية المدعمة.</p><p><strong>معلومة غريبة 🤯:</strong> النباتيين بيحصلهم نقص في إخراج الكالسيوم في البول (<span class="en">Reduction in calcium excretion</span>) كنوع من التكيف. (الاحتياج: <span class="mono">1000-1200 مجم</span>).</p></div>
+</div>
+<div class="bento b2 rv">
+<div class="glass scan card"><div class="scan-line"></div><span class="big-emoji">⚡</span><h3 class="h-md">6. <span class="en">Zinc</span> (الزنك)</h3><p><strong>المشكلة 🔴:</strong> النباتيين أقل ناس بياخدوا زنك. الزنك مهم للمناعة 🛡️ (<span class="en">Innate immunity</span>) وأيض الحديد (نقصه يساهم في أنيميا الحديد 🩸).</p><p>الامتصاص من النباتات ضعيف عشان حمض الفيتيك (<span class="en mono">Phytic acid</span>) 🔒.</p><p><strong>الحل 🟢:</strong> ياكل حبوب كاملة 🌾، بقوليات 🫘، مكسرات 🥜، جنين القمح. الدايت النباتي بيعتبر ذو (<span class="en">Moderate availability</span>) للزنك لو الحبوب مش متخمرة أو مش <span class="en">Unrefined</span>. السابليمنتس 💊 ممكن تكون ضرورية.</p></div>
+<div class="glass scan card" style="border-color:rgba(239,68,68,.15)"><div class="scan-line"></div><span class="big-emoji">🩸</span><h3 class="h-md">7. <span class="en">Iron</span> (الحديد)</h3><p><strong>المشكلة 🔴:</strong> النباتيين عرضة جداً لـ <span class="en">Iron deficiency anaemia</span>. مع إنهم بياكلوا حديد كتير، بس ده حديد نباتي (<span class="en">Non-haem iron</span>) امتصاصه سيء جداً 📉. عشان كده الـ <span class="en">Ferritin</span> في دمهم قليل.</p><p><span class="hr">❌ اللي بيمنع الامتصاص:</span> <span class="en">Phytates</span>، الـ <span class="en">Tannins/Polyphenols</span> (اللي في الشاي 🍵)، وبروتين الصويا.</p><p><span class="he">✅ اللي بيحسن الامتصاص:</span> فيتامين C 🍊 (<span class="en">Ascorbic acid</span>)، <span class="en">Retinol</span>، و <span class="en">Carotenes</span>.</p><div class="callout callout-red" style="margin-top:8px"><strong>الـ RDA للحديد (نباتيين) 📊:</strong> <span class="mono hr">32 مجم للسيدات 👩</span> و <span class="mono hr">14 مجم للرجال 👨</span> (عكس العادي: 18 للسيدات و 8 للرجال). السيدات في فترة انقطاع الطمث (<span class="en">Menopausal</span>) عرضة جداً للنقص.</div></div>
+</div>
+</div>
+</section>
+
+<!-- ═══ INTERLEAVED: Part 5 Flashcards ═══ -->
+<section id="fc5-sec">
+<div class="section-inner">
+<div class="sec-head rv"><span class="sec-emoji">🃏</span><span class="sec-tag">PRACTICE — PART 05</span><h2 class="h-lg glitch-head scramble">اختبر فهمك — التحديات التغذوية</h2></div>
+<div class="fc-grid rv" id="fc5"></div>
+</div>
+</section>
+
+<div class="vis-break"><span class="vb-line"></span><span class="vb-icon">🧠</span><span class="vb-line"></span></div>
+
+<!-- ═══════════ TERMINAL ═══════════ -->
+<section id="term-sec">
+<div class="section-inner">
+<div class="sec-head rv"><span class="sec-emoji">🧠</span><span class="sec-tag">SMART FINAL SUMMARY</span><h2 class="h-xl scramble glitch-head">الخلاصة الامتحانية والكلينيكال</h2><p class="txt" style="text-align:center">لو هتدخل الامتحان بكرا 📝، دي الـ 5 نقط اللي لازم تكون في دماغك زي اسمك:</p></div>
+<div class="terminal rv">
+<div class="term-dots"><span></span><span></span><span></span></div>
+<span class="term-title">NEURAL_VAULT_SUMMARY.sh</span>
+<div class="term-body">
+<div class="term-line"><span class="t-prompt">$</span> <span class="t-key">1. The Gut-Heart Connection (TMAO):</span> <span class="t-val">أكل اللحوم بيدي (Choline/Carnitine) → البكتيريا تحوله لـ TMA → الكبد يحوله لـ TMAO اللي بيعمل تصلب شرايين. النباتيين بيحموا نفسهم من الـ Pathway ده.</span></div>
+<div class="term-line"><span class="t-prompt">$</span> <span class="t-key">2. The Fiber Fermentation (SCFAs):</span> <span class="t-val">الألياف الذائبة بتتخمر في القولون وتطلع Short-chain fatty acids (Acetate, Propionate, Butyrate) ودي مضادات التهاب وبتحمي من الكانسر.</span></div>
+<div class="term-line"><span class="t-prompt">$</span> <span class="t-key">3. Quercetin & The Brain:</span> <span class="t-val">مركب نباتي بيشتغل كـ Natural Antidepressant عن طريق إنه بيعمل Inhibition لإنزيم الـ MAO فبيزود السيروتونين والدوبامين.</span></div>
+<div class="term-line"><span class="t-prompt">$</span> <span class="t-key">4. The B12 Threat & Homocysteine:</span> <span class="t-val">نقص الـ B12 (الحصري في الحيوانات) مش بس بيعمل Neurological damage و Megaloblastic anemia، ده كمان بيعلي الـ Homocysteine اللي بيدمر الأوعية الدموية ويعمل جلطات.</span></div>
+<div class="term-line"><span class="t-prompt">$</span> <span class="t-key">5. Absorption Blockers (Iron & Calcium):</span> <span class="t-val">الحديد النباتي (Non-haem) امتصاصه بيقل بالـ Phytates/Tannins وبيزيد بالـ Vit C. والكالسيوم النباتي بيقل بالـ Oxalates، عشان كده البروكلي والـ Kale (Low oxalate) هم الأفضل.</span></div>
+<div class="term-line" style="margin-top:14px;color:var(--cyan)"><span class="t-prompt">$</span> يا بطل 🏆، أنت كدة معاك المحاضرة دي مفصصة حرفياً بميكانيزماتها وتطبيقاتها. الـ PDF ده خلاص ملوش لازمة جنبك. بالتوفيق في دراستك وفي العيادة! 🩺🔥</div>
+</div>
+</div>
+</div>
+</section>
+
+<div class="vis-break"><span class="vb-line"></span><span class="vb-icon">🧪</span><span class="vb-line"></span></div>
+
+<!-- ═══════════ QUIZ CAROUSEL ═══════════ -->
+<section id="quiz-sec" style="padding-bottom:120px">
+<div class="section-inner">
+<div class="sec-head rv"><span class="sec-emoji">🧪</span><span class="sec-tag">MEGA QUIZ TERMINAL</span><h2 class="h-xl scramble glitch-head">اختبر نفسك!</h2><p class="h-md" style="color:var(--text-dim)">30 سؤال — سؤال واحد في كل مرة</p></div>
+<div id="quiz-terminal" class="rv"></div>
+</div>
+</section>
+
+</main>
+
+<script>
+// ═══════════════════════════════════════
+// WEB AUDIO API — HYPER-RESPONSIVE
+// ═══════════════════════════════════════
+let audioCtx;
+function initAudio(){if(!audioCtx)audioCtx=new(window.AudioContext||window.webkitAudioContext)()}
+function playCorrect(){
+initAudio();
+[523.25,659.25,783.99,1046.5].forEach((f,i)=>{
+const o=audioCtx.createOscillator(),g=audioCtx.createGain();
+o.type='sine';o.frequency.value=f;
+g.gain.setValueAtTime(.07,audioCtx.currentTime);
+g.gain.exponentialRampToValueAtTime(.001,audioCtx.currentTime+.8);
+o.connect(g);g.connect(audioCtx.destination);
+o.start(audioCtx.currentTime+i*.07);o.stop(audioCtx.currentTime+.9)
+})
+}
+function playWrong(){
+initAudio();
+const o=audioCtx.createOscillator(),g=audioCtx.createGain(),f=audioCtx.createBiquadFilter();
+f.type='lowpass';f.frequency.value=300;
+o.type='sawtooth';o.frequency.value=80;
+g.gain.setValueAtTime(.1,audioCtx.currentTime);
+g.gain.exponentialRampToValueAtTime(.001,audioCtx.currentTime+.4);
+o.connect(f);f.connect(g);g.connect(audioCtx.destination);
+o.start();o.stop(audioCtx.currentTime+.45)
+}
+function playFlip(){
+initAudio();
+const o=audioCtx.createOscillator(),g=audioCtx.createGain(),f=audioCtx.createBiquadFilter();
+f.type='lowpass';f.frequency.value=1800;
+o.type='sine';
+o.frequency.setValueAtTime(500,audioCtx.currentTime);
+o.frequency.exponentialRampToValueAtTime(120,audioCtx.currentTime+.1);
+g.gain.setValueAtTime(.035,audioCtx.currentTime);
+g.gain.exponentialRampToValueAtTime(.001,audioCtx.currentTime+.1);
+o.connect(f);f.connect(g);g.connect(audioCtx.destination);
+o.start();o.stop(audioCtx.currentTime+.12)
+}
+function playMatch(){
+initAudio();
+[880,1100,1320].forEach((fr,i)=>{
+const o=audioCtx.createOscillator(),g=audioCtx.createGain();
+o.type='sine';o.frequency.value=fr;
+g.gain.setValueAtTime(.04,audioCtx.currentTime);
+g.gain.exponentialRampToValueAtTime(.001,audioCtx.currentTime+.2);
+o.connect(g);g.connect(audioCtx.destination);
+o.start(audioCtx.currentTime+i*.05);o.stop(audioCtx.currentTime+.25)
+})
+}
+function playClick(){
+initAudio();
+const o=audioCtx.createOscillator(),g=audioCtx.createGain();
+o.type='square';o.frequency.value=1200;
+g.gain.setValueAtTime(.02,audioCtx.currentTime);
+g.gain.exponentialRampToValueAtTime(.001,audioCtx.currentTime+.04);
+o.connect(g);g.connect(audioCtx.destination);
+o.start();o.stop(audioCtx.currentTime+.05)
+}
+let hoverSoundTimeout;
+function playHoverTick(){
+initAudio();
+if(hoverSoundTimeout)return;
+hoverSoundTimeout=setTimeout(()=>{hoverSoundTimeout=null},80);
+const o=audioCtx.createOscillator(),g=audioCtx.createGain(),f=audioCtx.createBiquadFilter();
+f.type='bandpass';f.frequency.value=3000;f.Q.value=5;
+o.type='sine';o.frequency.value=2200+Math.random()*800;
+g.gain.setValueAtTime(.008,audioCtx.currentTime);
+g.gain.exponentialRampToValueAtTime(.001,audioCtx.currentTime+.03);
+o.connect(f);f.connect(g);g.connect(audioCtx.destination);
+o.start();o.stop(audioCtx.currentTime+.04)
+}
+
+// ═══════════════════════════════════════
+// BOOT SEQUENCE
+// ═══════════════════════════════════════
+(function(){
+const ov=document.getElementById('boot-overlay'),lines=document.querySelectorAll('.boot-line'),bf=document.getElementById('boot-bar-fill');
+const chars='ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789!@#$%^&*';
+let li=0;
+function decode(el){
+const t=el.dataset.text;el.classList.add('show');let it=0;
+const iv=setInterval(()=>{
+el.textContent=t.split('').map((c,i)=>c===' '?' ':i<it?t[i]:chars[Math.floor(Math.random()*chars.length)]).join('');
+it++;if(it>=t.length){el.textContent=t;clearInterval(iv)}
+},15)
+}
+function run(){
+if(li<lines.length){decode(lines[li]);bf.style.width=((li+1)/lines.length*100)+'%';li++;setTimeout(run,500)}
+else setTimeout(()=>{ov.classList.add('flash');setTimeout(()=>{ov.classList.remove('flash');ov.classList.add('hide');setTimeout(()=>ov.style.display='none',500)},120)},400)
+}
+setTimeout(run,300)
+})();
+
+// ═══════════════════════════════════════
+// CANVAS PARTICLES — UNTOUCHED
+// ═══════════════════════════════════════
+(function(){
+const c=document.getElementById('particle-canvas'),ctx=c.getContext('2d');let W,H;const particles=[];const mouse={x:-9999,y:-9999};const colors=['#22d3ee','#a78bfa','#34d399'];
+function resize(){W=c.width=innerWidth;H=c.height=innerHeight}resize();addEventListener('resize',resize);
+document.addEventListener('mousemove',e=>{mouse.x=e.clientX;mouse.y=e.clientY});
+const COUNT=Math.min(100,Math.floor(innerWidth/15));
+for(let i=0;i<COUNT;i++)particles.push({x:Math.random()*innerWidth,y:Math.random()*innerHeight,vx:(Math.random()-.5)*.4,vy:(Math.random()-.5)*.4,r:Math.random()*1.8+.6,c:colors[Math.floor(Math.random()*3)]});
+function anim(){
+ctx.clearRect(0,0,W,H);
+for(let i=0;i<particles.length;i++){
+const p=particles[i];p.x+=p.vx;p.y+=p.vy;
+if(p.x<0)p.x=W;if(p.x>W)p.x=0;if(p.y<0)p.y=H;if(p.y>H)p.y=0;
+const dx=mouse.x-p.x,dy=mouse.y-p.y,dist=Math.sqrt(dx*dx+dy*dy);
+if(dist<200){p.x+=dx*.015;p.y+=dy*.015;const a=1-dist/200;ctx.beginPath();ctx.moveTo(p.x,p.y);ctx.lineTo(mouse.x,mouse.y);ctx.strokeStyle=p.c+Math.floor(a*60).toString(16).padStart(2,'0');ctx.lineWidth=.6;ctx.stroke()}
+ctx.beginPath();ctx.arc(p.x,p.y,p.r,0,Math.PI*2);ctx.fillStyle=p.c;ctx.fill();
+for(let j=i+1;j<particles.length;j++){const p2=particles[j];const d=Math.sqrt((p.x-p2.x)**2+(p.y-p2.y)**2);if(d<90){ctx.beginPath();ctx.moveTo(p.x,p.y);ctx.lineTo(p2.x,p2.y);ctx.strokeStyle='rgba(34,211,238,'+(0.08*(1-d/90))+')';ctx.lineWidth=.3;ctx.stroke()}}
+}
+requestAnimationFrame(anim)
+}anim()
+})();
+
+// ═══════════════════════════════════════
+// CUSTOM CURSOR — CROSSHAIR UPGRADE
+// ═══════════════════════════════════════
+(function(){
+const cur=document.getElementById('cursor');const trails=[];
+for(let i=0;i<5;i++){const t=document.createElement('div');t.className='cursor-trail';document.body.appendChild(t);trails.push({el:t,x:0,y:0})}
+let mx=0,my=0;
+document.addEventListener('mousemove',e=>{mx=e.clientX;my=e.clientY;cur.style.left=mx+'px';cur.style.top=my+'px'});
+function at(){let px=mx,py=my;trails.forEach((t,i)=>{t.x+=(px-t.x)*.22;t.y+=(py-t.y)*.22;t.el.style.left=t.x+'px';t.el.style.top=t.y+'px';t.el.style.opacity=1-i/5*.7;t.el.style.width=t.el.style.height=(5-i*.7)+'px';px=t.x;py=t.y});requestAnimationFrame(at)}at();
+const hoverSel='a,button,.quiz-opt,.quiz-tf-btn,.nav-dot,.match-item,.qt-btn';
+const crossSel='.fc,#quiz-terminal';
+document.addEventListener('mouseover',e=>{
+if(e.target.closest(crossSel)){cur.classList.remove('hover');cur.classList.add('crosshair')}
+else if(e.target.closest(hoverSel)){cur.classList.remove('crosshair');cur.classList.add('hover')}
+});
+document.addEventListener('mouseout',e=>{
+if(e.target.closest(crossSel))cur.classList.remove('crosshair');
+if(e.target.closest(hoverSel))cur.classList.remove('hover');
+})
+})();
+
+// ═══════════════════════════════════════
+// SCROLL PROGRESS
+// ═══════════════════════════════════════
+addEventListener('scroll',()=>{document.getElementById('scroll-progress').style.width=(scrollY/(document.documentElement.scrollHeight-innerHeight)*100)+'%'});
+
+// ═══════════════════════════════════════
+// FLOATING NAV — DYNAMIC
+// ═══════════════════════════════════════
+(function(){
+const navData=[
+{id:'hero',label:'🏠 البداية'},{id:'part1',label:'📖 المصطلحات'},{id:'part2',label:'🍽️ الأنظمة'},{id:'part3',label:'🛡️ الألياف'},{id:'part4',label:'🏥 الأمراض'},{id:'part5',label:'⚗️ التحديات'},{id:'term-sec',label:'🧠 الخلاصة'},{id:'quiz-sec',label:'🧪 الكويز'}
+];
+const nav=document.getElementById('floating-nav');
+navData.forEach(n=>{nav.innerHTML+=`<div class="nav-dot${n.id==='hero'?' active':''}" data-target="${n.id}"><span class="nav-label">${n.label}</span></div>`});
+const dots=nav.querySelectorAll('.nav-dot'),secs=navData.map(n=>n.id);
+dots.forEach(d=>d.addEventListener('click',()=>{document.getElementById(d.dataset.target).scrollIntoView({behavior:'smooth'});playClick()}));
+addEventListener('scroll',()=>{let cur='hero';secs.forEach(id=>{const el=document.getElementById(id);if(el&&scrollY>=el.offsetTop-300)cur=id});dots.forEach(d=>d.classList.toggle('active',d.dataset.target===cur))})
+})();
+
+// ═══════════════════════════════════════
+// OBSERVERS
+// ═══════════════════════════════════════
+const rvObs=new IntersectionObserver(es=>{es.forEach(e=>{if(e.isIntersecting){e.target.classList.add('visible');rvObs.unobserve(e.target)}})},{threshold:.06,rootMargin:'0px 0px -30px 0px'});
+document.querySelectorAll('.rv').forEach(el=>rvObs.observe(el));
+
+const scChars='ABCDEFGHIJKLMNOPQRSTUVWXYZأبتثجحخدذرزسشصضطظعغفقكلمنهوي0123456789!@#$%&*';
+const scObs=new IntersectionObserver(es=>{es.forEach(e=>{if(e.isIntersecting){const el=e.target,ft=el.dataset.final||el.textContent;let it=0;const iv=setInterval(()=>{el.textContent=ft.split('').map((c,i)=>c===' '?' ':i<it?ft[i]:scChars[Math.floor(Math.random()*scChars.length)]).join('');it+=.8;if(it>=ft.length){el.textContent=ft;clearInterval(iv)}},25);scObs.unobserve(el)}})},{threshold:.3});
+document.querySelectorAll('.scramble').forEach(el=>{el.dataset.final=el.textContent;scObs.observe(el)});
+
+// GLITCH on scroll
+const glObs=new IntersectionObserver(es=>{es.forEach(e=>{if(e.isIntersecting){e.target.classList.add('glitching');setTimeout(()=>e.target.classList.remove('glitching'),300);glObs.unobserve(e.target)}})},{threshold:.5});
+document.querySelectorAll('.glitch-head').forEach(el=>glObs.observe(el));
+
+const tObs=new IntersectionObserver(es=>{es.forEach(e=>{if(e.isIntersecting){e.target.querySelectorAll('.term-line').forEach((l,i)=>setTimeout(()=>l.classList.add('visible'),i*250));tObs.unobserve(e.target)}})},{threshold:.15});
+document.querySelectorAll('.term-body').forEach(el=>tObs.observe(el));
+
+const bObs=new IntersectionObserver(es=>{es.forEach(e=>{if(e.isIntersecting){e.target.style.width=e.target.dataset.width;bObs.unobserve(e.target)}})},{threshold:.3});
+document.querySelectorAll('.stat-fill').forEach(el=>bObs.observe(el));
+
+// ═══════════════════════════════════════
+// GLASS ILLUMINATION + HOVER SOUND
+// ═══════════════════════════════════════
+document.querySelectorAll('.glass').forEach(card=>{
+card.addEventListener('mousemove',e=>{
+const r=card.getBoundingClientRect();
+card.style.setProperty('--mx',((e.clientX-r.left)/r.width*100)+'%');
+card.style.setProperty('--my',((e.clientY-r.top)/r.height*100)+'%');
+playHoverTick();
+})
+});
+
+// ═══════════════════════════════════════
+// INTERLEAVED FLASHCARDS
+// ═══════════════════════════════════════
+const fc1Data=[
+{emoji:'🥗',q:'ما الفرق بين PBD و Veganism؟',a:'الـ PBD بيركز على الصحة والـ Whole foods. الـ Veganism فلسفة أخلاقية هدفها حماية الحيوانات (Animal Empathy) وممكن الشخص ياكل Junk food.'},
+{emoji:'📊',q:'إيه هو الـ Flexitarian؟',a:'نظام مرن أساسه نباتي بس بيسمح بأكل حيواني من وقت للتاني بكميات محددة.'},
+{emoji:'⭐',q:'إيه القاعدة الذهبية للـ WFPB؟',a:'كُل كتير: خضروات، فواكه، بقوليات، حبوب كاملة، مكسرات. تجنب: اللحوم، الألبان، البيض، السكر المكرر، الدقيق المكرر.'}
+];
+const fc3Data=[
+{emoji:'🧶',q:'إيه الفرق بين الألياف الذائبة وغير الذائبة؟',a:'الذائبة (Soluble): بتدوب في المايه وتعمل Gel وبتتخمر لـ SCFAs. غير الذائبة (Insoluble): بتزود حجم البراز وبتمنع الإمساك.'},
+{emoji:'💎',q:'إيه هي الـ SCFAs وأهميتها؟',a:'Short-Chain Fatty Acids (Acetate, Propionate, Butyrate) ناتجة من تخمر الألياف. مضادات التهاب، بتحمي من سرطان القولون، وبتحافظ على جدار الأمعاء.'},
+{emoji:'♻️',q:'إيه علاقة Vit C بـ Vit E؟',a:'فيتامين C بيعمل Recycle (إعادة تدوير) لفيتامين E ويرجعه لصورته النشطة عشان يكمل حماية الخلايا.'}
+];
+const fc5Data=[
+{emoji:'💀',q:'إيه هو الـ TMAO Pathway؟',a:'اللحوم فيها Choline/L-carnitine → البكتيريا تحولهم لـ TMA → الكبد يحوله لـ TMAO → تصلب شرايين وجلطات. النباتيين بيتجنبوا الـ Pathway ده.'},
+{emoji:'🌸',q:'إزاي الـ Quercetin بيعالج الاكتئاب؟',a:'بيعمل Inhibition لإنزيم الـ MAO اللي بيكسر السيروتونين والدوبامين. فلما يتوقف، نواقل السعادة بتزيد في المخ.'},
+{emoji:'🚨',q:'ليه نقص B12 خطير على النباتيين؟',a:'موجود فقط في الحيوانات. نقصه بيعمل Megaloblastic anaemia وأعراض عصبية (تنميل، خرف). وبيعلي الـ Homocysteine اللي بيدمر الأوعية.'},
+{emoji:'🩸',q:'ليه الحديد النباتي امتصاصه ضعيف؟',a:'النباتي (Non-haem iron) بيتأثر بالـ Inhibitors زي الـ Phytates والـ Tannins. بيتحسن بالـ Vitamin C. والـ RDA أعلى: 32 مجم للسيدات و14 للرجال.'}
+];
+function buildFC(data,containerId){
+const con=document.getElementById(containerId);
+data.forEach(f=>{con.innerHTML+=`<div class="fc" onclick="this.classList.toggle('flipped');playFlip()"><div class="fc-inner"><div class="fc-front glass" style="clip-path:var(--hud-clip)"><span class="fc-emoji">${f.emoji}</span><h4>${f.q}</h4><span class="fc-hint">👆 اضغط للإجابة</span></div><div class="fc-back glass" style="clip-path:var(--hud-clip)"><p>${f.a}</p></div></div></div>`})
+}
+buildFC(fc1Data,'fc1');buildFC(fc3Data,'fc3');buildFC(fc5Data,'fc5');
+
+// ═══════════════════════════════════════
+// MATCHING SYSTEM
+// ═══════════════════════════════════════
+const matchData=[
+{term:'Soluble Fiber 🧶',def:'بتتخمر وتطلع SCFAs'},
+{term:'Insoluble Fiber 🧱',def:'بتزود حجم البراز'},
+{term:'Vitamin B12 🚨',def:'موجود فقط في الحيوانات'},
+{term:'TMAO 💀',def:'بيعمل تصلب شرايين'},
+{term:'Quercetin 🌸',def:'بيثبط إنزيم MAO'},
+{term:'Phytates 🔒',def:'بتمنع امتصاص الحديد والزنك'}
+];
+(function(){
+const colsDiv=document.getElementById('match-cols');
+const shuffledDefs=[...matchData].sort(()=>Math.random()-.5);
+let termHTML='<div class="match-col">';
+let defHTML='<div class="match-col">';
+matchData.forEach((m,i)=>{termHTML+=`<div class="match-item" data-idx="${i}" data-side="term">${m.term}</div>`});
+shuffledDefs.forEach(m=>{const oi=matchData.indexOf(m);defHTML+=`<div class="match-item" data-idx="${oi}" data-side="def">${m.def}</div>`});
+colsDiv.innerHTML=termHTML+'</div>'+defHTML+'</div>';
+let selectedTerm=null,matched=0;
+colsDiv.addEventListener('click',e=>{
+const item=e.target.closest('.match-item');if(!item||item.classList.contains('matched'))return;
+initAudio();playClick();
+if(item.dataset.side==='term'){
+colsDiv.querySelectorAll('.match-item[data-side="term"]').forEach(i=>i.classList.remove('selected'));
+item.classList.add('selected');selectedTerm=item
+}else if(selectedTerm){
+if(item.dataset.idx===selectedTerm.dataset.idx){
+item.classList.add('matched');selectedTerm.classList.add('matched');selectedTerm.classList.remove('selected');
+matched++;playMatch();
+if(matched===matchData.length){document.getElementById('match-status').textContent='🎉 أحسنت! ربطت كل المفاهيم صح!';document.getElementById('match-status').style.opacity='1'}
+selectedTerm=null
+}else{item.classList.add('wrong-match');playWrong();setTimeout(()=>item.classList.remove('wrong-match'),400)}
+}
+})
+})();
+
+// ═══════════════════════════════════════
+// QUIZ DATA
+// ═══════════════════════════════════════
+const quizData=[
+{id:1,type:'mcq',q:'A patient asks you about the difference between a Plant-Based Diet (PBD) and Veganism. Based on the literature, which of the following accurately describes the primary distinction?',opts:['A) Veganism prioritizes the consumption of whole foods, while PBD allows for highly processed plant products.','B) PBD is exclusively a philosophy rooted in animal welfare, whereas veganism is primarily focused on environmental protection.','C) Veganism seeks to exclude animal use primarily for ethical reasons (animal empathy), whereas a PBD emphasizes health and consuming minimally processed whole foods.','D) Both terms are nutritionally and ethically identical and can be used interchangeably in clinical practice.'],ans:2,exp:'الـ Veganism دي "فلسفة" هدفها الأخلاقي هو حماية الحيوانات (Animal empathy)، وممكن الشخص ياكل Junk food عادي طالما نباتي. لكن الـ PBD بيركز على الصحة وحماية البيئة وبيشجع أكل الـ Whole foods وتجنب الأكل المصنع (Processed).'},
+{id:2,type:'mcq',q:'A 55-year-old male is advised to follow the "Portfolio Diet" to manage his hyperlipidemia. Which of the following specific combinations is a core component of this diet?',opts:['A) Low-fat dairy, fish, berries, and rye.','B) 42 g of nuts, 50 g plant protein, 20 g viscous soluble fiber, and 2 g plant sterols.','C) Olive oil, moderate red wine, and exclusion of all poultry.','D) Complete exclusion of all cooked foods and reliance on raw vegetables.'],ans:1,exp:'الـ Portfolio diet اتعمل مخصوص لتقليل الكوليسترول، والمحاضرة حددت نسبه بالظبط زي ما هي مذكورة في الإجابة B. أما الإجابة A دي بتاعة الـ Nordic diet، و C للـ Mediterranean.'},
+{id:3,type:'mcq',q:'Soluble dietary fiber plays a crucial role in glycemic control for patients with Diabetes Mellitus. What is the primary physiological mechanism behind this benefit?',opts:['A) It accelerates stomach emptying, leading to rapid insulin spikes.','B) It adds bulk to fecal matter through mechanical stimulation.','C) It forms a gel-like matrix that delays stomach emptying and retards glucose absorption.','D) It directly stimulates pancreatic beta cells to produce more insulin independently of blood glucose levels.'],ans:2,exp:'الألياف الذائبة (Soluble fiber) بتدوب في الماية وتعمل مادة لزجة (Gel-like matrix). المادة دي بتبطئ خروج الأكل من المعدة (Delays stomach emptying) فبالتالي الجلوكوز بيمتص ببطء، وده بيحسن الـ Glycemic control. الإجابة B بتوصف الـ Insoluble fiber.'},
+{id:4,type:'mcq',q:'The interaction between dietary fiber and gut microbiota leads to the production of Short-Chain Fatty Acids (SCFAs). Which of the following is an established health-enhancing effect of these SCFAs?',opts:['A) Acting as pro-inflammatory agents to stimulate the immune system.','B) Increasing oxidative stress to destroy cancer cells.','C) Counteracting carcinogenesis in colon cancer cells and maintaining the intestinal barrier integrity.','D) Promoting the growth of pathogenic bacteria over Lactobacillus.'],ans:2,exp:'البكتيريا النافعة بتتغذى على الألياف وتطلع SCFAs (زي الـ Acetate, Propionate, Butyrate). دي بتشتغل كمضادات التهاب (Anti-inflammatory)، بتحمي حاجز الأمعاء (Intestinal barrier)، وبتعكس عملية التسرطن في القولون (Counteract carcinogenesis).'},
+{id:5,type:'mcq',q:'Vitamin C is known as a premier water-soluble antioxidant. In addition to cellular signaling and maintaining cell growth, what specific synergistic role does it play with another antioxidant?',opts:['A) It recycles Vitamin E by reducing it back to its active form.','B) It forms complexes with copper to inhibit LDL oxidation directly.','C) It serves as the primary precursor for Vitamin A synthesis.','D) It binds to monoamine oxidase (MAO) to function as a natural antidepressant.'],ans:0,exp:'الفيتامين C بيعمل وظيفة مهمة جداً وهي الـ Recycling لفيتامين E (الـ Fat-soluble) عشان يرجعه لصورته النشطة (Active form) ويخليه يكمل شغله في حماية الخلايا.'},
+{id:6,type:'mcq',q:'A recent study highlights that vegans may have lower risks of cardiovascular disease due to alterations in their gut microbiome. Specifically, vegan diets lack precursors that gut microbes convert into a highly atherogenic compound. Which metabolic pathway is avoided in a vegan diet?',opts:['A) Conversion of Alpha-linolenic acid (ALA) to Docosahexaenoic acid (DHA).','B) Conversion of dietary fiber to Short-Chain Fatty Acids (SCFAs).','C) Breakdown of choline and L-carnitine into TMA, which the liver converts to TMAO.','D) Breakdown of Ferulic acid into Nitric Oxide (NO).'],ans:2,exp:'دي نقطة High-yield جداً! اللحوم والأسماك فيها Choline و L-carnitine. البكتيريا بتحولهم لـ TMA والكبد يحوله لـ TMAO. المادة دي (TMAO) بتعمل تصلب شرايين وجلطات. النظام النباتي مفهوش الـ Precursors دي فبيحمي القلب من الـ Pathway ده.'},
+{id:7,type:'mcq',q:'While plant-based diets offer cardiovascular benefits, a poorly balanced vegan diet can paradoxically increase CVD risk due to Vitamin B12 deficiency. What is the precise mechanism by which this deficiency increases cardiovascular risk?',opts:['A) It leads to an overproduction of eicosapentaenoic acid (EPA).','B) It causes severe hyperhomocysteinemia, which induces vascular endothelial impairment.','C) It forces the body to convert alpha-linolenic acid (ALA) into trans-fatty acids.','D) It drastically increases the systemic absorption of dietary cholesterol.'],ans:1,exp:'نقص فيتامين B12 بيخلي مادة اسمها Homocysteine تتراكم في الدم (Hyperhomocysteinemia). المادة دي بتدمر مرونة الأوعية الدموية وبتعمل Endothelial impairment، وده يعتبر Risk factor خطير جداً للجلطات وأمراض القلب.'},
+{id:8,type:'mcq',q:'A 28-year-old strict vegan presents with symptoms of anxiety and depression. She recently started consuming foods rich in Quercetin. How does Quercetin physiologically aid in reducing depressive symptoms?',opts:['A) By stimulating the rapid reuptake of serotonin at the synaptic cleft.','B) By inhibiting the activity of Monoamine Oxidase (MAO), leading to higher levels of neurotransmitters like serotonin and dopamine.','C) By directly crossing the blood-brain barrier to act as an exogenous form of dopamine.','D) By decreasing the TNF-α/IL-10 ratio and severely depressing immune function.'],ans:1,exp:'الـ Quercetin بيشتغل كـ Natural antidepressant لأنه بيعمل Inhibition لإنزيم الـ MAO. الإنزيم ده وظيفته يكسر نواقل السعادة (Serotonin, Dopamine). فلما نوقفه، نسبة النواقل دي بتزيد في المخ والأعراض بتتحسن.'},
+{id:9,type:'mcq',q:'Older adults adopting a vegan diet are at an increased risk of sarcopenia and frailty due to the lower anabolic properties of plant-based proteins. According to the lecture, what is an effective dietary strategy to address this specific challenge?',opts:['A) Exclusively consuming raw, uncooked vegetables.','B) Increasing portion sizes to improve the intake of protein and essential amino acids (EAAs).','C) Reducing caloric intake to lower metabolic stress on muscle fibers.','D) Avoiding soy products due to their low Digestible Indispensable Amino Acid Score (DIAAS).'],ans:1,exp:'لأن البروتين النباتي قدرته البنائية (Anabolic properties) أقل من الحيواني، المحاضرة نصحت إن النباتيين كبار السن لازم "يزودوا حجم الوجبات" (Increasing portion sizes) عشان يقدروا يحصلوا على كمية كافية من الأحماض الأمينية الأساسية (EAAs).'},
+{id:10,type:'mcq',q:'Vegans must ensure adequate protein quality since plant-based foods often display a less optimal amino acid profile. How is the fulfillment of protein requirements (0.8g/kg) typically ensured in a vegan diet?',opts:['A) By relying solely on fruit consumption for essential amino acids.','B) Through the complementary consumption of legumes and cereals.','C) By consuming large amounts of refined sugars to spare protein breakdown.','D) By increasing the intake of low-oxalate vegetables like broccoli.'],ans:1,exp:'عشان نتغلب على نقص بعض الأحماض الأمينية في النباتات، الحل هو الـ "Complementary consumption" أو "الدمج" بين البقوليات (Legumes) والحبوب (Cereals). الاتنين بيكملوا النقص اللي في بعض وبيدوا بروتين كامل.'},
+{id:11,type:'mcq',q:'A 35-year-old vegan patient presents with fatigue, numbness and tingling in the hands and feet, and memory loss. Her CBC reveals macrocytic RBCs. Which nutrient deficiency is the most likely cause, and what is its primary natural source?',opts:['A) Iron; found mainly in dark-green leafy vegetables.','B) Zinc; found mainly in unrefined cereal grains.','C) Vitamin B12; found exclusively in animal-derived foods.','D) Folic acid; found mainly in citrus fruits.'],ans:2,exp:'الأعراض العصبية (Tingling, memory loss) مع فقر الدم ضخم الأرومات (Macrocytic/Megaloblastic anemia) هي الصورة الكلاسيكية لنقص الـ Vitamin B12. الفيتامين ده مش موجود طبيعياً غير في المنتجات الحيوانية، عشان كدة النباتيين بيعانوا من نقصه.'},
+{id:12,type:'mcq',q:'Omega-3 fatty acids are crucial for mitigating oxidative stress. Individuals following a strict vegan diet lacking marine foods rely on Alpha-linolenic acid (ALA). Which of the following is true regarding ALA metabolism in the human body?',opts:['A) ALA is highly efficient and converts to DHA at a rate of 70-80%.','B) ALA converts to EPA at a rate of 5–15%, and less than 1% reliably converts to DHA.','C) ALA is unable to be converted into longer-chain fatty acids under any physiological conditions.','D) ALA conversion requires the presence of dietary cholesterol to form EPA.'],ans:1,exp:'دي مشكلة كبيرة عند النباتيين. هما بياخدوا ALA من النباتات (زي عين الجمل وبذور الشيا)، بس الجسم بيحوله لـ EPA بنسبة ضعيفة جداً (5-15%)، وبتحوله لـ DHA بنسبة شبه معدومة (أقل من 1%). عشان كدة لازم ياخدوا مكملات من الطحالب.'},
+{id:13,type:'mcq',q:'A vegan patient wants to increase her calcium intake using plant-based sources. However, the absorption of calcium from vegetables is significantly hindered by certain compounds. Which of the following vegetables is recommended due to its low content of these inhibitory compounds?',opts:['A) Spinach, because it is rich in phytates.','B) Broccoli, because it is a low-oxalate vegetable.','C) Soybeans, because they are rich in tannins.','D) Wheat bran, because of its high cellulose content.'],ans:1,exp:'الكالسيوم في النباتات امتصاصه بيقل بسبب مركبات اسمها الأكسالات (Oxalates) والفيتات (Phytates). المحاضرة نصحت بأكل الخضراوات اللي الأكسالات فيها قليلة (Low-oxalate) زي البروكلي والـ Kale لأن امتصاص الكالسيوم منها بيكون ممتاز.'},
+{id:14,type:'mcq',q:'A 45-year-old premenopausal vegan woman is diagnosed with iron deficiency anemia despite consuming large amounts of legumes and spinach. Which dietary factor is most likely inhibiting her absorption of non-haem iron?',opts:['A) High intake of ascorbic acid (Vitamin C).','B) Consumption of retinol-rich foods.','C) High levels of phytates, tannins/polyphenols, and soy protein in her diet.','D) Lack of intrinsic factor secretion in her stomach.'],ans:2,exp:'الحديد النباتي (Non-haem iron) امتصاصه ضعيف جداً. ومن أشهر الحاجات اللي بتوقف امتصاصه (Inhibitors) هي الفيتات، التانين (موجود في الشاي)، وبروتين الصويا. بينما الفيتامين C بيعتبر Enhancer (بيحسن الامتصاص).'},
+{id:15,type:'mcq',q:'To compensate for the lower bioavailability of non-haem iron in plant-based diets, what are the specific Recommended Dietary Allowances (RDA) of iron for vegetarian/vegan men and women in the U.S., respectively?',opts:['A) 8 mg for men, 18 mg for women.','B) 14 mg for men, 32 mg for women.','C) 2.4 mg for men, 5 mg for women.','D) 1000 mg for men, 1200 mg for women.'],ans:1,exp:'الأرقام دي High-yield. لأن امتصاص الحديد النباتي سيء، أمريكا رفعت التوصيات الخاصة بالنباتيين لتكون 14 مجم للرجال و 32 مجم للسيدات.'},
+{id:16,type:'mcq',q:'Zinc is an essential trace element linked to innate immunity. Why do vegan dietary patterns typically possess only a "moderate degree" of zinc availability?',opts:['A) Because plant-based sources lack zinc completely.','B) Because their predominant reliance is often on unrefined, unfermented cereal grains which contain phytates that block absorption.','C) Because zinc from plants is instantly excreted by the kidneys.','D) Because zinc requires Vitamin B12 as a co-factor for intestinal transport.'],ans:1,exp:'النباتات فيها زنك، لكن المشكلة إن الحبوب غير المكررة (Unrefined) وغير المتخمرة (Unfermented) بيكون فيها حمض الفيتيك اللي بيمسك في الزنك ويمنع امتصاصه.'},
+{id:17,type:'mcq',q:'When comparing the physiological parameters of vegans to omnivores, which of the following statements regarding mineral excretion is correct based on the lecture?',opts:['A) Calcium excretion decreases among vegans, likely attributed to differences in dietary calcium intake.','B) Vegans excrete significantly higher amounts of calcium due to high potassium intake.','C) Iron excretion is doubled in vegans due to high dietary fiber.','D) Zinc excretion is completely halted in the presence of Vitamin C.'],ans:0,exp:'المحاضرة ذكرت نصاً إن الانتقال للدايت النباتي بيعمل تقليل في إخراج الكالسيوم في البول (Reduction in calcium excretion). الجسم بيعمل Adaptation.'},
+{id:18,type:'mcq',q:'Polyphenols are powerful phytochemicals present in a vegan diet. Besides their antioxidant capacity, how do they contribute to maintaining vascular homeostasis?',opts:['A) By increasing LDL oxidation to clear it from the bloodstream.','B) By modulating nitric oxide (NO) production, inhibiting platelet aggregation, and reducing vascular inflammation.','C) By stimulating the MAO enzyme to constrict blood vessels.','D) By increasing the absorption of dietary cholesterol in the gut.'],ans:1,exp:'البوليفينول بتنظم إنتاج الـ Nitric Oxide (اللي بيعمل توسيع للشرايين)، بتمنع تجمع الصفائح الدموية (Platelet aggregation)، وبتقلل أكسدة الـ LDL.'},
+{id:19,type:'mcq',q:'Anthocyanins, found in various plant-based foods, exhibit great antioxidant properties. What specific chemical interaction allows them to reduce the generation of free radicals?',opts:['A) They donate calcium ions to stabilize cellular membranes.','B) They exhibit the ability to form complexes with active metal ions (like copper), reducing their catalytic influence on free radical generation.','C) They irreversibly bind to DNA to prevent transcription of pro-inflammatory cytokines.','D) They dissolve in fat tissue to block the release of arachidonic acid.'],ans:1,exp:'الأنثوسيانين بيعمل Complex (بيمسك) في أيونات المعادن النشطة زي النحاس. المعادن دي لو اتسابت حرة بتحفز تكوين الشوارد الحرة.'},
+{id:20,type:'mcq',q:'Plant-based dietary indexes (PDI) have been developed to measure adherence to a PB dietary pattern. What is a known limitation of using PDI in clinical studies?',opts:['A) They strictly require all participants to consume a raw food vegan diet.','B) They rarely provide information on exact nutrient contributions from various components, meaning little is known about the impact on specific nutritional quality.','C) They only give negative weights to plant foods and positive weights to animal foods.','D) They are unable to differentiate between a vegan diet and a pescatarian diet.'],ans:1,exp:'مؤشرات الـ PDI بتدي درجات (موجب للنباتي وسالب للحيواني)، لكن عيبها الرئيسي إنها مش بتدي معلومات دقيقة عن كمية الـ Nutrients الفعلية.'},
+{id:21,type:'tf',q:'A "vegan diet" and a "plant-based diet (PBD)" are synonymous concepts that both prioritize the consumption of whole foods and minimally processed products for health reasons.',ans:false,exp:'FALSE: فيه فرق جوهري. الـ PBD بيركز على الصحة والـ Whole foods، لكن الـ Vegan diet أساسه فلسفي وأخلاقي (Animal empathy) وممكن الشخص الـ Vegan ياكل منتجات مصنعة.'},
+{id:22,type:'tf',q:'According to the Academy of Nutrition and Dietetics, appropriately planned vegan diets are healthful and nutritionally adequate for all stages of the life cycle, including pregnancy and infancy.',ans:true,exp:'TRUE: الأكاديمية صرحت بوضوح إن الدايت النباتي المخطط له كويس آمن ومناسب لكل المراحل العمرية وحتى للرياضيين.'},
+{id:23,type:'tf',q:'Soluble dietary fiber, such as beta-glucans and inulin, is inert to digestive enzymes and is primarily responsible for adding bulk to fecal matter without being fermented.',ans:false,exp:'FALSE: الوصف ده ينطبق على الـ Insoluble fiber. أما الـ Soluble fiber بيحصلها Fermentation (تخمر) في القولون لإنتاج الـ SCFAs.'},
+{id:24,type:'tf',q:'The conversion of choline and L-carnitine from meat into trimethylamine N-oxide (TMAO) by gut microbes and the liver is an emerging pathway associated with an increased risk of cardiovascular events.',ans:true,exp:'TRUE: ده ميكانيزم مهم جداً. البكتيريا بتحول الكارنيتين لـ TMA، والكبد بيحوله لـ TMAO اللي بيعمل تصلب شرايين.'},
+{id:25,type:'tf',q:'Quercetin acts as a natural antidepressant by enhancing the breakdown of serotonin and dopamine in the brain.',ans:false,exp:'FALSE: العكس. الـ Quercetin بيعمل Inhibition (تثبيط) لإنزيم الـ MAO اللي بيكسر السيروتونين والدوبامين، فبيزود نسبتهم.'},
+{id:26,type:'tf',q:'Vegans frequently experience lower bone mineral density (BMD) due to potential insufficiencies in Vitamin B12, Vitamin D, calcium, and omega-3 fatty acids.',ans:true,exp:'TRUE: الدايت النباتي بيفتقر لبعض العناصر دي، وده بيخلي النباتيين أكثر عرضة لهشاشة العظام لو مأخدوش مكملات.'},
+{id:27,type:'tf',q:'Soy and its derivatives are highly recommended in vegan diets because they exhibit enhanced digestibility, aligning well with the Digestible Indispensable Amino Acid Score (DIAAS) to assess protein quality.',ans:true,exp:'TRUE: الصويا من أفضل البروتينات النباتية لأن هضمها ممتاز والـ Amino acid profile بتاعها عالي الجودة.'},
+{id:28,type:'tf',q:'To effectively prevent iron deficiency anemia, vegans are advised to consume their plant-based iron sources along with phytates and tannins to enhance absorption.',ans:false,exp:'FALSE: الفيتات والتانين بيعتبروا Inhibitors بيمنعوا امتصاص الحديد. لازم ناخده مع Vit C (Enhancer).'},
+{id:29,type:'tf',q:'The Recommended Dietary Allowance (RDA) for iron is significantly higher for vegetarians and vegans in the U.S. (32 mg/day for women, 14 mg/day for men) compared to non-vegetarians due to the lack of dietary haem iron.',ans:true,exp:'TRUE: التوصيات رفعت الجرعة للنباتيين عشان يعوضوا الـ Bioavailability الضعيفة.'},
+{id:30,type:'tf',q:'Consumption of meat-based dietary patterns is inversely correlated with biomarkers of low-grade inflammation, whereas plant-based diets typically increase inflammatory markers such as CRP.',ans:false,exp:'FALSE: العكس تماماً. الأكل الحيواني Positively correlated مع زيادة الالتهاب. النباتيين عندهم CRP أقل.'}
+];
+
+// ═══════════════════════════════════════
+// QUIZ CAROUSEL SYSTEM
+// ═══════════════════════════════════════
+(function(){
+const term=document.getElementById('quiz-terminal');
+let score=0,answered=0,streak=0,currentQ=0;
+const answeredSet=new Set();
+const total=quizData.length;
+
+// Build carousel
+let html=`<div class="glass card" id="qt-card" style="clip-path:none;border-radius:22px;padding:clamp(24px,4vw,50px)">
+<div class="qt-header">
+<span class="qt-counter" id="qt-counter">سؤال 1 / ${total}</span>
+<span class="qt-streak" id="qt-streak">🔥 0</span>
+<span class="qt-score" id="qt-score">✅ 0/${total}</span>
+</div>
+<div class="qt-progress-wrap"><div class="qt-progress-fill" id="qt-progress"></div></div>
+<div id="qt-slides">`;
+
+quizData.forEach((q,i)=>{
+if(q.type==='mcq'){
+html+=`<div class="qt-slide${i===0?' active':''}" data-idx="${i}"><div class="quiz-q"><span class="q-num">${q.id}</span>${q.q}</div><div class="quiz-opts">${q.opts.map((o,oi)=>`<div class="quiz-opt" data-qid="${q.id}" data-idx="${oi}">${o}</div>`).join('')}</div><div class="quiz-exp" id="exp${q.id}">${q.exp}</div></div>`
+}else{
+html+=`<div class="qt-slide${i===0?' active':''}" data-idx="${i}"><div class="quiz-q"><span class="q-num">${q.id}</span>${q.q}</div><div class="quiz-tf"><div class="quiz-tf-btn" data-qid="${q.id}" data-val="true">✅ TRUE</div><div class="quiz-tf-btn" data-qid="${q.id}" data-val="false">❌ FALSE</div></div><div class="quiz-exp" id="exp${q.id}">${q.exp}</div></div>`
+}
+});
+
+html+=`</div>
+<div class="qt-nav">
+<button class="qt-btn" id="qt-prev" disabled>◀ السابق</button>
+<button class="qt-btn" id="qt-next">التالي ▶</button>
+</div>
+</div>`;
+term.innerHTML=html;
+
+const slides=term.querySelectorAll('.qt-slide');
+const prevBtn=document.getElementById('qt-prev');
+const nextBtn=document.getElementById('qt-next');
+const qtCard=document.getElementById('qt-card');
+
+function showSlide(idx){
+slides.forEach(s=>s.classList.remove('active'));
+slides[idx].classList.add('active');
+document.getElementById('qt-counter').textContent=`سؤال ${idx+1} / ${total}`;
+prevBtn.disabled=idx===0;
+nextBtn.textContent=idx===total-1?'النهاية ✓':'التالي ▶';
+document.getElementById('qt-progress').style.width=((idx+1)/total*100)+'%';
+}
+
+prevBtn.addEventListener('click',()=>{if(currentQ>0){currentQ--;showSlide(currentQ);playClick()}});
+nextBtn.addEventListener('click',()=>{if(currentQ<total-1){currentQ++;showSlide(currentQ);playClick()}});
+
+function triggerCorrect(){
+initAudio();playCorrect();streak++;
+qtCard.classList.add('qt-bounce');setTimeout(()=>qtCard.classList.remove('qt-bounce'),500);
+const pulse=document.getElementById('neon-pulse');pulse.className='';pulse.classList.add('active');
+document.getElementById('qt-streak').textContent='🔥 '+streak;
+const emojis=['🎉','✨','🌟','💚','🎊','⭐','🌿','🍀','💎','🏆'];
+for(let i=0;i<25;i++){const s=document.createElement('span');s.textContent=emojis[Math.floor(Math.random()*emojis.length)];s.style.cssText=`position:fixed;left:${Math.random()*100}vw;top:-30px;font-size:${Math.random()*18+14}px;z-index:99999;pointer-events:none;animation:confettiFall ${Math.random()*1.5+.8}s ease-out forwards;`;document.body.appendChild(s);setTimeout(()=>s.remove(),2500)}
+}
+function triggerWrong(){
+initAudio();playWrong();streak=0;
+document.getElementById('qt-streak').textContent='🔥 0';
+qtCard.classList.add('qt-glitch');setTimeout(()=>qtCard.classList.remove('qt-glitch'),300);
+const pulse=document.getElementById('neon-pulse');pulse.className='red';pulse.classList.add('active')
+}
+function updateScore(){
+document.getElementById('qt-score').textContent='✅ '+score+'/'+total;
+}
+
+term.addEventListener('click',e=>{
+const opt=e.target.closest('.quiz-opt');
+if(opt){
+const qid=+opt.dataset.qid;if(answeredSet.has(qid))return;answeredSet.add(qid);answered++;
+const q=quizData.find(x=>x.id===qid),idx=+opt.dataset.idx,sibs=opt.parentElement.children;
+if(idx===q.ans){opt.classList.add('correct');score++;triggerCorrect()}
+else{opt.classList.add('wrong');sibs[q.ans].classList.add('correct');triggerWrong()}
+for(let s of sibs){if(s!==opt&&!s.classList.contains('correct'))s.style.opacity='.35';s.style.pointerEvents='none'}
+document.getElementById('exp'+qid).classList.add('show');updateScore()
+}
+const tf=e.target.closest('.quiz-tf-btn');
+if(tf){
+const qid=+tf.dataset.qid;if(answeredSet.has(qid))return;answeredSet.add(qid);answered++;
+const q=quizData.find(x=>x.id===qid),val=tf.dataset.val==='true',sibs=tf.parentElement.children;
+if(val===q.ans){tf.classList.add('correct');score++;triggerCorrect()}
+else{tf.classList.add('wrong');for(let s of sibs)if(s.dataset.val===(q.ans?'true':'false'))s.classList.add('correct');triggerWrong()}
+for(let s of sibs)s.style.pointerEvents='none';
+document.getElementById('exp'+qid).classList.add('show');updateScore()
+}
+})
+})();
+</script>
+</body>
+</html>
